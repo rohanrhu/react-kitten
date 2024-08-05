@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+	"tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+	"target": "ESNext",
+	"module": "ESNext",
+	"declaration": true,
+	"declarationDir": "./dist/types",
+	"emitDeclarationOnly": false,
+	"lib": ["ES2020", "DOM", "DOM.Iterable"],
+	"outDir": "./dist",
+	"esModuleInterop": true,
+	"skipLibCheck": true,
+	"forceConsistentCasingInFileNames": true,
+	"allowSyntheticDefaultImports": true,
+	"composite": true,
+	
+	/* Linting */
+	"strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+	
+    "baseUrl": "./",
+    "paths": {
+		"@react-kitten": ["./src"],
+    },
+	
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+	"moduleResolution": "bundler",
+  },
+  "include": ["vite.config.ts", "src"],
+}

@@ -1,0 +1,49 @@
+/**
+ * React<Kitten> (react-kitten) is a desktop environment for the web.
+ * Copyright (C) 2024, Oğuzhan Eroğlu (https://meowingcat.io) <meowingcate@gmail.com>
+ * 
+ * GitHub: https://github.com/rohanrhu/react-kitten
+ * NPM: https://www.npmjs.com/package/react-kitten
+ * 
+ * This project and its source code is licensed under the MIT license,
+ * found in the LICENSE file in the root directory of this source tree.
+ * (MIT License: https://opensource.org/licenses/MIT)
+ */
+
+.Space {
+    position: relative;
+    perspective: 800px;
+}
+
+.Space_stageds {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    width: 150px;
+    height: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    perspective: 20rem;
+    transition: all 0.5s;
+    overflow-y: auto;
+    padding: 200px 0px;
+}
+
+.Space.Space__autoHideStageds .Space_stageds {
+    pointer-events: none;
+    opacity: 0;
+}
+.Space.Space__showStageds .Space_stageds,
+.Space.Space__autoHideStageds.Space__showStageds .Space_stageds {
+    pointer-events: all;
+    opacity: 1;
+}

@@ -1,0 +1,321 @@
+/**
+ * React<Kitten> (react-kitten) is a desktop environment for the web.
+ * Copyright (C) 2024, Oğuzhan Eroğlu (https://meowingcat.io) <meowingcate@gmail.com>
+ * 
+ * GitHub: https://github.com/rohanrhu/react-kitten
+ * NPM: https://www.npmjs.com/package/react-kitten
+ * 
+ * This project and its source code is licensed under the MIT license,
+ * found in the LICENSE file in the root directory of this source tree.
+ * (MIT License: https://opensource.org/licenses/MIT)
+ */
+
+.Window {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 500px;
+    height: 400px;
+    background-color: rgb(255, 255, 255);
+    border-radius: 5px;
+    box-shadow: 0px 0px 12px 0px rgba(0, 0, 0, 0.1),
+                0px 0px 0px 1px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    animation: AppearWindow 0.5s forwards;
+    box-sizing: border-box;
+    transition: transform 0.25s, opacity 0.75s;
+}
+.Window.Window__moving {
+}
+.Window.Window__staging {
+    transition: transform 0.25s, width 0.5s, height 0.5s, opacity 0.75s;
+}
+.Window.Window__focused {
+    box-shadow: 0px 0px 12px 0px rgba(0, 0, 0, 0.2),
+    0px 0px 0px 1px rgba(0, 0, 0, 0.2);
+}
+.Window.Window__staged {
+    animation: AppearWindow 0.5s forwards;
+    position: static;
+    transition: all 0.5s !important;
+    z-index: 100;
+}
+
+.Window_stagedLayer {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 100000;
+    content: ' ';
+    display: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+.Window.Window__staged .Window_stagedLayer {
+    display: flex;
+}
+
+.Window_stagedWindow {
+    position: relative;
+    transition: all 0.5s;
+    transform: rotateY(20deg);
+    margin-bottom: 25px;
+    z-index: 100;
+    overflow: visible;
+}
+.Window_stagedWindow:hover {
+    scale: 1.4;
+    z-index: 200;
+}
+
+@keyframes AppearWindow {
+    0% {
+        opacity: 0;
+        scale: 0.25;
+    }
+    100% {
+        opacity: 1;
+        scale: 1;
+    }
+}
+
+@keyframes DisappearWindow {
+    0% {
+        opacity: 1;
+        scale: 1;
+    }
+    100% {
+        opacity: 0;
+        scale: 0.25;
+    }
+}
+
+.TitleBar {
+    width: 100%;
+    height: 30px;
+    background: linear-gradient(0deg, rgb(0 0 0 / 5%), rgb(0 0 0 / 0%));
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    border-bottom: rgb(204, 204, 204) 1px solid;
+    user-select: none;
+    box-sizing: border-box;
+}
+.TitleBar, .TitleBar * {
+    cursor: default;
+}
+.TitleBar__dragging {
+}
+
+.TitleBar .Buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-right: 5px;
+}
+
+.TitleBar .Buttons .Button {
+    width: 15px;
+    height: 15px;
+    border-radius: 100%;
+    margin-left: 5px;
+    font-size: 9px;
+    color: white;
+    line-height: 15px;
+    text-align: center;
+    transition: all 0.25s;
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.TitleBar .Buttons .Button:hover {
+    animation: Bubble 0.25s forwards;
+    box-shadow: 0px 0px 0px 1px rgba(255, 255, 255, 0.5);
+}
+
+.Title {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(0, 0, 0, 0.5);
+    padding: 10px 0px;
+    padding-right: 10px;
+    box-sizing: border-box;
+    flex-grow: 1;
+}
+
+.CloseButton {
+    background-color: #ff5f56;
+}
+
+.StageButton {
+    background-color: #ffc260;
+}
+
+.Content {
+    flex-grow: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.Content_fluid {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: top;
+    justify-content: start;
+}
+
+.Content_unfocusedLayer {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 100000;
+    content: ' ';
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+.Window.Window__focused .Content_unfocusedLayer {
+    display: none;
+}
+
+.Resizers {}
+
+.Resizer {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
+    animation: Disappear 0.5s forwards;
+}
+
+.Resizer__bottom {
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: ns-resize;
+}
+
+.Resizer__top {
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: ns-resize;
+}
+
+.Resizer__left {
+    top: 50%;
+    left: -5px;
+    transform: translateY(-50%);
+    cursor: ew-resize;
+}
+
+.Resizer__right {
+    top: 50%;
+    right: -5px;
+    transform: translateY(-50%);
+    cursor: ew-resize;
+}
+
+.Resizer__bottomLeft {
+    bottom: -5px;
+    left: -5px;
+    cursor: nesw-resize;
+}
+
+.Resizer__bottomRight {
+    bottom: -5px;
+    right: -5px;
+    cursor: nwse-resize;
+}
+
+.Resizer__topLeft {
+    top: -5px;
+    left: -5px;
+    cursor: nwse-resize;
+}
+
+.Resizer__topRight {
+    top: -5px;
+    right: -5px;
+    cursor: nesw-resize;
+}
+
+.Window.Window__mayResize .Resizer,
+.Window.Window__showResizers .Resizer {
+    animation: AppearResizer 0.5s forwards;
+    pointer-events: all;
+    transition: scale 0.25s;
+    transition-timing-function: cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+.Window.Window__mayResize .Resizer:hover,
+.Window.Window__showResizers .Resizer:hover {
+    scale: 1.25 !important;
+}
+
+.Window.Window__mayResize,
+.Window.Window__mayResize * {
+    user-select: none;
+}
+
+@keyframes Bubble {
+    0% {
+        scale: 1;
+    }
+    50% {
+        scale: 1.25;
+    }
+    100% {
+        scale: 1;
+    }
+}
+
+@keyframes AppearResizer {
+    0% {
+        opacity: 0;
+        scale: 0;
+    }
+    50% {
+        opacity: 1;
+        scale: 1.25;
+    }
+    100% {
+        opacity: 1;
+        scale: 1;
+    }
+}
+
+@keyframes Disappear {
+    0% {
+        opacity: 1;
+        scale: 1;
+    }
+    50% {
+        opacity: 1;
+        scale: 1.25;
+    }
+    100% {
+        opacity: 0;
+        scale: 0;
+    }
+}

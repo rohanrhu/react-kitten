@@ -1,0 +1,90 @@
+/**
+ * React<Kitten> (react-kitten) is a desktop environment for the web.
+ * Copyright (C) 2024, Oğuzhan Eroğlu (https://meowingcat.io) <meowingcate@gmail.com>
+ * 
+ * GitHub: https://github.com/rohanrhu/react-kitten
+ * NPM: https://www.npmjs.com/package/react-kitten
+ * 
+ * This project and its source code is licensed under the MIT license,
+ * found in the LICENSE file in the root directory of this source tree.
+ * (MIT License: https://opensource.org/licenses/MIT)
+ */
+
+#root {
+  margin: 0px;
+  padding: 0px;
+  text-align: center;
+}
+* {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+    background: linear-gradient(183deg, #ffcef1, #ffc3e1);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    box-sizing: border-box;
+}
+
+.App {
+  overflow: hidden;
+}
+
+h1 {
+  font-family: 'Merienda Variable', cursive;
+  font-weight: 900;
+}
+
+.colorful {
+  background: linear-gradient(rgb(219 65 155), rgb(107 52 90));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.colorful__secondary {
+  filter: hue-rotate(270deg);
+}
+
+p {
+  font-family: 'Josefin Sans Variable', sans-serif;
+  font-weight: 400;
+  font-size: 20px;
+  padding: 20px;
+  color: rgb(0 0 0 / 66%);
+}
+
+.Header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100px;
+  padding: 0px 25px;
+}
+
+.Header_logo {
+  display: flex;
+  align-items: center;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+
+.Header_logo_text {
+  font-family: 'Merienda Variable', cursive;
+  font-weight: 900;
+  font-size: 30px;
+  line-height: 30px;
+  margin-left: 10px;
+}
+
+.Header_logo_image {
+  display: flex;
+  align-items: center;
+}
+
+.Header_logo_image_img {
+  height: 40px;
+  margin: auto;
+}
