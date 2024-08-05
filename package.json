@@ -1,7 +1,9 @@
 {
   "name": "react-kitten",
   "private": false,
-  "version": "0.1.0",
+  "repository": "github:rohanrhu/react-kitten",
+  "homepage": "https://kitten.meowingcat.io",
+  "version": "0.1.1",
   "type": "module",
   "main": "dist/react-kitten.js",
   "types": "dist/react-kitten.d.ts",
