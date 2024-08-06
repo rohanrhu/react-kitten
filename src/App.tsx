@@ -39,13 +39,13 @@ function Header() {
 }
 
 function App() {
-  const [size, setSize] = useState<[number, number]>([window?.innerWidth, window?.innerHeight])
+  const [size, setSize] = useState<[number, number]>([window.innerWidth, window.innerHeight])
   const [space, setSpace] = useState(0)
   
   useEffect(() => {
-    const handleResize = () => setSize([window?.innerWidth, window?.innerHeight])
-    window?.addEventListener('resize', handleResize)
-    return () => window?.removeEventListener('resize', handleResize)
+    const handleResize = () => setSize([window.innerWidth, window.innerHeight])
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [])
   
   return <div className="App">
@@ -67,10 +67,6 @@ function App() {
             Next Space
           </button>
 
-          <MyWindow title="Cats and Kittens">
-            <h2>Window</h2>
-            <p>Window content</p>
-          </MyWindow>
           <MyWindow title="Cats and Kittens">
             <h2>Window</h2>
             <p>Window content</p>
