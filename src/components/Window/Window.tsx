@@ -28,9 +28,11 @@ const DEFAULT_MIN_SIZE: [number, number] = [100, 100]
 const DEFAULT_MAX_SIZE = null
 const DEFAULT_RESIZABLE: boolean = true
 const DEFAULT_RESIZER_THRESHOLD: number = 25
+const DEFAUULT_STAGED: boolean = false
 const DEFAULT_STAGING_DISTANCE: number = 150
 const DEFAULT_STAGED_SIZE: [number, number] = [100, 120]
 const DEFAULT_ALLOW_OUTSIDE: boolean = true
+const DEFAULT_COMPENSATE_POSITION_ON_VIEWPORT_RESIZE: boolean = true
 const DEFAULT_CALLBACK = () => {}
 
 interface WindowProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -46,6 +48,7 @@ interface WindowProps extends React.HTMLAttributes<HTMLDivElement> {
   stagingDistance?: number
   stagedSize?: [number, number]
   allowOutside?: boolean
+  compensatePositionOnViewportResize?: boolean
   onStagedChange: (staged: boolean) => void
   onSizeChange: (size: [number, number]) => void
   onPositionChange: (position: [number, number]) => void
@@ -77,6 +80,7 @@ interface WindowProps extends React.HTMLAttributes<HTMLDivElement> {
  * @param stagingDistance Distance for staging the window
  * @param stagedSize Size of the staged window
  * @param allowOutside If the window can go outside of the manager
+ * @param compensatePositionOnViewportResize When the viewport is resized, the window will be repositioned to fit inside the manager
  * @param onStagedChange Callback for staged change
  * @param onSizeChange Callback for size change
  * @param onPositionChange Callback for position change
@@ -92,10 +96,11 @@ function Window({
   maxSize = DEFAULT_MAX_SIZE,
   resizable = DEFAULT_RESIZABLE,
   resizerThreshold = DEFAULT_RESIZER_THRESHOLD,
-  staged = false,
+  staged = DEFAUULT_STAGED,
   stagingDistance = DEFAULT_STAGING_DISTANCE,
   stagedSize = DEFAULT_STAGED_SIZE,
   allowOutside = DEFAULT_ALLOW_OUTSIDE,
+  compensatePositionOnViewportResize = DEFAULT_COMPENSATE_POSITION_ON_VIEWPORT_RESIZE,
   onSizeChange = DEFAULT_CALLBACK,
   onStagedChange = DEFAULT_CALLBACK,
   onPositionChange = DEFAULT_CALLBACK,
@@ -124,6 +129,7 @@ function Window({
   const [stagedScale, setStagedScale] = useState([1, 1])
   const [scaledStagedSize, setScaledStagedSize] = useState([0, 0])
   const [movingStartPosition, setMovingStartPosition] = useState<[number, number]>(position)
+  const [prevManagerSize, setPrevManagerSize] = useState(managerSize)
   
   useEffect(() => {focused && setFocusedWindow(kittenId)}, [kittenId, focused, setFocusedWindow])
   useEffect(() => {focusedWindow === kittenId ? setFocused(true): setFocused(false)}, [focusedWindow, kittenId])
@@ -202,6 +208,24 @@ function Window({
     if (position[1] < 0)
       onPositionChange([position[0], 0])
   }, [allowOutside, position, size, managerSize, onPositionChange])
+
+  useEffect(() => {
+    if (!compensatePositionOnViewportResize) return
+    if (managerSize[0] === prevManagerSize[0] && managerSize[1] === prevManagerSize[1]) return
+
+    const [right, bottom] = [position[0] + size[0], position[1] + size[1]]
+    let [x, y] = [position[0], position[1]]
+    
+    if (right > managerSize[0])
+      x = managerSize[0] - size[0]
+    if (bottom > managerSize[1])
+      y = managerSize[1] - size[1]
+    
+    if (x !== position[0] || y !== position[1])
+      onPositionChange([x, y])
+    
+    setPrevManagerSize(managerSize)
+  }, [managerSize, prevManagerSize, position, size, onPositionChange, compensatePositionOnViewportResize]);
 
   const onResize = useCallback((size: [number, number], delta: [number, number]) => {
     const new_size: [number, number] = [size[0] + delta[0], size[1] + delta[1]]

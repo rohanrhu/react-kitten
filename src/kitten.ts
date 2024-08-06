@@ -10,4 +10,4 @@
  * (MIT License: https://opensource.org/licenses/MIT)
  */
 
-export const version = '0.0.1-alpha'
+export const version = '0.1.2'
