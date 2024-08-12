@@ -147,6 +147,9 @@
     padding-right: 10px;
     box-sizing: border-box;
     flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    margin-right: 5px;
 }
 
 .CloseButton {
