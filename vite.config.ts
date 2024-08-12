@@ -27,7 +27,8 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@react-kitten': path.resolve(__dirname, './src')
+      '@react-kitten': path.resolve(__dirname, './src'),
+      '@react-kitten/*': path.resolve(__dirname, './src/*')
     }
   },
   css: {

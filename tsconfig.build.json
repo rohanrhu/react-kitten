@@ -23,6 +23,7 @@
     "baseUrl": "./",
     "paths": {
 		"@react-kitten": ["./src"],
+		"@react-kitten/*": ["./src/*"],
     },
 	
     "allowImportingTsExtensions": true,
