@@ -13,9 +13,11 @@
 import React, { createContext } from 'react'
 
 export interface ManagerContextProps {
+    position: [number, number]
     size: [number, number]
     lmb: boolean
     pointer: [number, number]
+    setPointer: React.Dispatch<React.SetStateAction<[number, number]>>
     wheelBusy: boolean
     setWheelBusy: React.Dispatch<React.SetStateAction<boolean>>
     scale: [number, number]
@@ -27,9 +29,11 @@ export interface ManagerContextProps {
 }
 
 export const ManagerContext = createContext<ManagerContextProps>({
+    position: [0, 0],
     size: [0, 0],
     lmb: false,
     pointer: [0, 0],
+    setPointer: () => {},
     wheelBusy: false,
     setWheelBusy: () => {},
     scale: [1, 1],
@@ -68,6 +72,8 @@ export interface WindowContextProps {
     moving: boolean
     focused: boolean
     setFocused: React.Dispatch<React.SetStateAction<boolean>>
+    showResizers: boolean
+    setShowResizers: React.Dispatch<React.SetStateAction<boolean>>
     onMoveStart: () => void
     onMoveEnd: () => void,
 }
@@ -79,6 +85,8 @@ export const WindowContext = createContext<WindowContextProps>({
     maxSize: null,
     moving: false,
     focused: false,
+    showResizers: false,
+    setShowResizers: () => {},
     setFocused: () => {},
     onMoveStart: () => {},
     onMoveEnd: () => {}

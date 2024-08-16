@@ -10,7 +10,7 @@
  * (MIT License: https://opensource.org/licenses/MIT)
  */
 
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { HTMLAttributes, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import classNames from 'classnames'
 
 import { ManagerContext, SpaceContext } from '../../contexts'
@@ -49,7 +49,7 @@ function Space({
 
   return <SpaceContext.Provider value={contextProps}>
     <div
-      {...attrs}
+      {...(attrs as HTMLAttributes<HTMLDivElement>)}
       className={`${classNames([
         styles.Space,
         { [styles.Space__autoHideStageds]: autoHideStageds },

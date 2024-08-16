@@ -10,12 +10,12 @@
  * (MIT License: https://opensource.org/licenses/MIT)
  */
 
-import React, { useEffect, useState, useCallback, useContext, useRef, useMemo } from 'react'
+import React, { useEffect, useState, useCallback, useContext, useRef, useMemo, HTMLAttributes } from 'react'
 import { createPortal } from 'react-dom'
 import classNames from 'classnames'
 
+import { isMobileDevice } from '../../kitten'
 import { usePosition, useKittenId } from '../../hooks'
-
 import { ManagerContext, SpaceContext, WindowContext } from '../../contexts'
 
 import styles from './Window.module.css'
@@ -130,12 +130,14 @@ function Window({
   const [scaledStagedSize, setScaledStagedSize] = useState([0, 0])
   const [movingStartPosition, setMovingStartPosition] = useState<[number, number]>(position)
   const [prevManagerSize, setPrevManagerSize] = useState(managerSize)
+  const hideResizersTimeoutRef = useRef<Timer>()
   
   useEffect(() => {focused && setFocusedWindow(kittenId)}, [kittenId, focused, setFocusedWindow])
   useEffect(() => {focusedWindow === kittenId ? setFocused(true): setFocused(false)}, [focusedWindow, kittenId])
   useEffect(() => {focused ? onFocus(): onBlur()}, [focused, onFocus, onBlur])
   useEffect(() => setStaging(moving && (pointer[0] < scaleX(stagingDistance))), [moving, pointer, stagingDistance, scaleX])
   useEffect(() => {!staging && setLastWindowPosition(position)}, [staging, position, setLastWindowPosition])
+  useEffect(() => {setWheelBusy(moving)}, [moving, setWheelBusy])
 
   useEffect(() => {
     if (moving && !prevMoving) {
@@ -227,6 +229,13 @@ function Window({
     setPrevManagerSize(managerSize)
   }, [managerSize, prevManagerSize, position, size, onPositionChange, compensatePositionOnViewportResize]);
 
+  useEffect(() => {
+    if (!isMobileDevice()) return
+    if (!showResizers) return
+    clearTimeout(hideResizersTimeoutRef.current)
+    hideResizersTimeoutRef.current = setTimeout(() => setShowResizers(false), 2500)
+  }, [showResizers])
+
   const onResize = useCallback((size: [number, number], delta: [number, number]) => {
     const new_size: [number, number] = [size[0] + delta[0], size[1] + delta[1]]
     
@@ -244,6 +253,7 @@ function Window({
   }, [onSizeChange, minSize, maxSize])
 
   const onMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    if (isMobileDevice()) return
     clearTimeout(resizerMouseMoveTimeoutRef.current)
     if (!resizable) return
     const rect = event.currentTarget.getBoundingClientRect()
@@ -263,6 +273,7 @@ function Window({
   }, [resizable, resizerThreshold, scaleX, scaleY])
 
   const onMouseLeave = useCallback(() => {
+    if (isMobileDevice()) return
     clearTimeout(resizerMouseMoveTimeoutRef.current)
     setShowResizers(false)
   }, [])
@@ -271,12 +282,12 @@ function Window({
   const onMoveEndCallback = useCallback(() => setMoving(false), [])
   
   const contextProps = useMemo(() => ({
-    size, position, minSize, maxSize, moving, focused, setFocused,
+    size, position, minSize, maxSize, moving, focused, setFocused, showResizers, setShowResizers,
     onMoveStart: onMoveStartCallback, onMoveEnd: onMoveEndCallback,
-  }), [size, position, minSize, maxSize, moving, focused, onMoveStartCallback, onMoveEndCallback])
+  }), [size, position, minSize, maxSize, moving, focused, showResizers, setShowResizers, onMoveStartCallback, onMoveEndCallback])
   
   const window = <div
-      {...attrs}
+      {...(attrs as HTMLAttributes<HTMLDivElement>)}
       className={classNames([
         styles.Window,
         { [styles.Window__showResizers]: !moving && !staged && showResizers },
@@ -333,6 +344,8 @@ function Window({
       }}
       onMouseOver={() => setWheelBusy(true)}
       onMouseLeave={() => setWheelBusy(false)}
+      onTouchStart={() => setWheelBusy(true)}
+      onTouchEnd={() => setWheelBusy(false)}
       onClick={() => {
         onStagedChange(false)
         onPositionChange(movingStartPosition)
@@ -386,7 +399,7 @@ function Resizer({
   onResize,
   onMove
 }: ResizerProps) {
-  const { lmb, pointer, scaleX, scaleY, revertScaleX, revertScaleY } = useContext(ManagerContext)
+  const { position: managerPosition, pointer, lmb, setPointer, scaleX, scaleY, revertScaleX, revertScaleY, setWheelBusy } = useContext(ManagerContext)
   const { size, position } = useContext(WindowContext)
   const [dragging, setDragging] = useState(false)
   const sizeRef = useRef(size)
@@ -423,7 +436,7 @@ function Resizer({
     } else if (direction === 'bottom-left') {
       onResizeCallback(sizeRef.current, [-revertScaleX(delta[0]), revertScaleY(delta[1])])
       onMove([positionRef.current[0] + delta[0], positionRef.current[1]])
-    }
+    } else throw new Error('Invalid direction')
   }, [pointer, dragging, direction, onResizeCallback, onMove, scaleX, scaleY, revertScaleX, revertScaleY])
 
   useEffect(() => { sizeRef.current = size }, [size])
@@ -439,7 +452,23 @@ function Resizer({
   const onMouseLeave = useCallback(() => {
     onMayResize(false)
   }, [onMayResize])
-  
+
+  const onTouchStart = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length !== 1) return
+    const new_pointer: [number, number] = [event.touches[0].clientX - managerPosition[0], event.touches[0].clientY - managerPosition[1]]
+    setDragging(true)
+    onMayResize(true)
+    setWheelBusy(true)
+    setPointer(new_pointer)
+    prevDragPositionRef.current = new_pointer
+  }, [onMayResize, setWheelBusy, setPointer, managerPosition])
+
+  const onTouchEnd = useCallback(() => {
+    setDragging(false)
+    onMayResize(false)
+    setWheelBusy(false)
+  }, [onMayResize, setWheelBusy])
+
   return <div
     className={classNames([
       styles.Resizer,
@@ -455,6 +484,8 @@ function Resizer({
     draggable={false}
     onMouseDown={onMouseDown}
     onMouseLeave={onMouseLeave}
+    onTouchStart={onTouchStart}
+    onTouchEnd={onTouchEnd}
   ></div>
 }
 
@@ -471,8 +502,8 @@ function TitleBar({
   onMove = () => {},
   ...attrs
 }: TitleBarProps) {
-  const { lmb, pointer } = useContext(ManagerContext)
-  const { position, setFocused, onMoveStart, onMoveEnd } = useContext(WindowContext)
+  const { position: managerPosition, pointer, lmb, setWheelBusy, setPointer } = useContext(ManagerContext)
+  const { position, setFocused, onMoveStart, onMoveEnd, setShowResizers } = useContext(WindowContext)
   const [moving, setMoving] = useState(false)
   const [movingPosition, setMovingPosition] = useState<[number, number]>(position)
   const moveStartPointerRef = useRef<[number, number]>([0, 0])
@@ -495,13 +526,30 @@ function TitleBar({
   }, [setFocused])
 
   const onMouseUp = useCallback(() => setMoving(false), [])
+
+  const onTouchStart = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length !== 1) return
+    const touch = event.touches[0]
+    const rect = event.currentTarget.getBoundingClientRect()
+    const new_pointer: [number, number] = [touch.clientX - managerPosition[0], touch.clientY - managerPosition[1]]
+    moveStartPointerRef.current = [touch.clientX - rect.x, touch.clientY - rect.y]
+    setPointer(new_pointer)
+    setWheelBusy(true)
+    setMoving(true)
+    setFocused(true)
+    setShowResizers(true)
+  }, [setWheelBusy, setFocused, setShowResizers, setPointer, managerPosition])
+
+  const onTouchEnd = useCallback(() => setMoving(false), [])
   
   return <div
-    {...attrs}
+    {...(attrs as React.HTMLAttributes<HTMLDivElement>)}
     className={`${classNames([styles.TitleBar, moving && styles.TitleBar__dragging])} ${typeof attrs.className !== 'undefined' ? attrs.className : ''}`}
     draggable={false}
     onMouseDown={onMouseDown}
     onMouseUp={onMouseUp}
+    onTouchStart={onTouchStart}
+    onTouchEnd={() => onTouchEnd()}
   >
     {children}
   </div>
@@ -512,7 +560,7 @@ function TitleBar({
  */
 function Title({ children = null, ...attrs }: React.HTMLAttributes<HTMLDivElement>) {
   return <div
-    {...attrs}
+    {...(attrs as HTMLAttributes<HTMLDivElement>)}
     className={`${classNames([styles.Title])} ${typeof attrs.className !== 'undefined' ? attrs.className : ''}`}
     draggable={false}
   >
@@ -525,7 +573,7 @@ function Title({ children = null, ...attrs }: React.HTMLAttributes<HTMLDivElemen
  */
 function Buttons({ children = null, ...attrs }: React.HTMLAttributes<HTMLDivElement>) {
   return <div
-    {...attrs}
+    {...(attrs as HTMLAttributes<HTMLDivElement>)}
     className={`${classNames([styles.Buttons])} ${typeof attrs.className !== 'undefined' ? attrs.className : ''}`}
     onClick={event => event.stopPropagation()}
     draggable={false}
@@ -551,6 +599,8 @@ function CloseButton({
     }}
     onMouseDown={event => event.stopPropagation()}
     onMouseUp={event => event.stopPropagation()}
+    onTouchStart={event => event.stopPropagation()}
+    onTouchEnd={event => event.stopPropagation()}
   >
     ✖︎
   </div>,
@@ -576,6 +626,8 @@ function StageButton({
     }}
     onMouseDown={event => event.stopPropagation()}
     onMouseUp={event => event.stopPropagation()}
+    onTouchStart={event => event.stopPropagation()}
+    onTouchEnd={event => event.stopPropagation()}
   >
     <span style={{ fontSize: 10 }}>—</span>
   </div>,
@@ -599,11 +651,12 @@ function Content({
   onUnfocusedWheel = DEFAULT_ON_UNFOCUSED_WHEEL,
   ...attrs
 }: ContentProps) {
+  const { setWheelBusy } = useContext(ManagerContext)
   const { setFocused } = useContext(WindowContext)
   const fluidRef = useRef<HTMLDivElement>(null)
   
   return <div
-    {...attrs}
+    {...(attrs as HTMLAttributes<HTMLDivElement>)}
     className={`${classNames([styles.Content])} ${typeof attrs.className !== 'undefined' ? attrs.className : ''}`}
     onWheel={event => event.stopPropagation()}
   >
@@ -617,6 +670,8 @@ function Content({
           if (!onUnfocusedWheel(event)) return
           fluidRef.current?.scrollBy({ top: event.deltaY, left: 0 })
         }}
+        onTouchStart={() => setWheelBusy(true)}
+        onTouchEnd={() => setWheelBusy(false)}
       ></div>
   </div>
 }
