@@ -705,6 +705,8 @@ function BasicWindow({
   const [staged, setStaged] = useState(false)
   const [kittenId,] = useKittenId()
 
+  useEffect(() => setOpenedState(opened), [opened])
+
   return <>
     {openedState ? <Window
       kittenId={kittenId}
