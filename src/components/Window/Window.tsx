@@ -74,7 +74,6 @@ interface WindowProps extends React.HTMLAttributes<HTMLDivElement> {
  * @param minSize Minimum size of the window
  * @param maxSize Maximum size of the window
  * @param resizable If the window is resizable
- * @param resizable If the window is resizable
  * @param resizerThreshold Threshold for showing the resizers
  * @param staged If the window is staged
  * @param stagingDistance Distance for staging the window
