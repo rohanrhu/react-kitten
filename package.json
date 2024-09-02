@@ -1,5 +1,6 @@
 {
   "name": "react-kitten",
+  "description": "Kitten is a React Desktop Environment & Window Manager for the web.",
   "private": false,
   "repository": "github:rohanrhu/react-kitten",
   "homepage": "https://kitten.meowingcat.io",
