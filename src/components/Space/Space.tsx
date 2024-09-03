@@ -18,10 +18,12 @@ import { ManagerContext, SpaceContext } from '../../contexts'
 import styles from './Space.module.css'
 
 const DEFAULT_AUTO_HIDE_STAGEDS: boolean = false
+const DEFAULT_STAGEDS_WIDTH: number = 150
 
 export interface SpaceProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode
   autoHideStageds?: boolean
+  stagedsWidth?: number
 }
 
 /**
@@ -32,6 +34,7 @@ export interface SpaceProps extends React.HTMLAttributes<HTMLDivElement> {
 function Space({
   children = null,
   autoHideStageds = DEFAULT_AUTO_HIDE_STAGEDS,
+  stagedsWidth = DEFAULT_STAGEDS_WIDTH,
   ...attrs
 }: SpaceProps) {
   const { size, pointer, setWheelBusy } = useContext(ManagerContext)
@@ -44,8 +47,8 @@ function Space({
   useEffect(() => setShowStageds(pointer[0] <= 150), [pointer])
   
   const contextProps = useMemo(() => ({
-    stagedsRef, focusedWindow, setFocusedWindow, lastWindowPosition, setLastWindowPosition, windowZIndexCounter, setWindowZIndexCounter
-  }), [stagedsRef, focusedWindow, setFocusedWindow, lastWindowPosition, setLastWindowPosition, windowZIndexCounter, setWindowZIndexCounter])
+    stagedsRef, focusedWindow, setFocusedWindow, lastWindowPosition, setLastWindowPosition, windowZIndexCounter, setWindowZIndexCounter, stagedsWidth
+  }), [stagedsRef, focusedWindow, setFocusedWindow, lastWindowPosition, setLastWindowPosition, windowZIndexCounter, setWindowZIndexCounter, stagedsWidth])
 
   return <SpaceContext.Provider value={contextProps}>
     <div
@@ -65,6 +68,7 @@ function Space({
       <div
         ref={stagedsRef}
         className={classNames([styles.Space_stageds])}
+        style={{ width: stagedsWidth }}
         onMouseOver={() => setWheelBusy(true)}
         onMouseLeave={() => setWheelBusy(false)}
       ></div>

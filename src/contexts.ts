@@ -45,6 +45,7 @@ export const ManagerContext = createContext<ManagerContextProps>({
 })
 
 export interface SpaceContextProps {
+    stagedsWidth: number
     focusedWindow: string | null
     setFocusedWindow: React.Dispatch<React.SetStateAction<string | null>>
     windowZIndexCounter: number
@@ -55,6 +56,7 @@ export interface SpaceContextProps {
 }
 
 export const SpaceContext = createContext<SpaceContextProps>({
+    stagedsWidth: 150,
     focusedWindow: null,
     setFocusedWindow: () => {},
     windowZIndexCounter: 0,
