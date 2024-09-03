@@ -36,6 +36,11 @@
     transition: all 0.5s;
     overflow-y: auto;
     padding: 200px 0px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.Space_stageds::-webkit-scrollbar {
+    display: none;
 }
 
 .Space.Space__autoHideStageds .Space_stageds {
