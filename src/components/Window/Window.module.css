@@ -68,8 +68,8 @@
     overflow: visible;
 }
 .Window_stagedWindow:hover {
-    scale: 1.4;
-    z-index: 200;
+    transform: rotateY(0) translateX(10px);
+    scale: 1.2;
 }
 
 @keyframes AppearWindow {
