@@ -214,9 +214,27 @@ function Window({
       setScale(1)
       setStagingXCompenstation(0)
       setStagingYCompenstation(0)
-    } else {
-      if (stagedSize[0] && !stagedSize[1]) {
-        const scale_to_staged = (size[1] > size[0]) ? stagedSize[0] / size[1]: stagedSize[0] / size[0]
+    } else if (stagedSize[0] && !stagedSize[1]) {
+      const scale_to_staged = (size[1] > size[0]) ? stagedSize[0] / size[1]: stagedSize[0] / size[0]
+      const x_compensation = pointer[0] - position[0]
+      const y_compensation = pointer[1] - position[1]
+
+      setRotation(90 * (1 - distance / scaled_distance))
+      setScale(scale_to_staged)
+      setStagingXCompenstation(x_compensation)
+      setStagingYCompenstation(y_compensation)
+    } else if (!stagedSize[0] && stagedSize[1]) {
+      const scale_to_staged = (size[0] > size[1]) ? stagedsWidth / size[0]: stagedSize[1] / size[1]
+      const x_compensation = pointer[0] - position[0]
+      const y_compensation = pointer[1] - position[1]
+
+      setRotation(90 * (1 - distance / scaled_distance))
+      setScale(scale_to_staged)
+      setStagingXCompenstation(x_compensation)
+      setStagingYCompenstation(y_compensation)
+    } else if (stagedSize[0] && stagedSize[1]) {
+      if (size[0] > size[1]) {
+        const scale_to_staged = stagedSize[0] / size[0]
         const x_compensation = pointer[0] - position[0]
         const y_compensation = pointer[1] - position[1]
 
@@ -224,8 +242,8 @@ function Window({
         setScale(scale_to_staged)
         setStagingXCompenstation(x_compensation)
         setStagingYCompenstation(y_compensation)
-      } else if (!stagedSize[0] && stagedSize[1]) {
-        const scale_to_staged = (size[0] > size[1]) ? stagedsWidth / size[0]: stagedSize[1] / size[1]
+      } else {
+        const scale_to_staged = stagedSize[1] / size[1]
         const x_compensation = pointer[0] - position[0]
         const y_compensation = pointer[1] - position[1]
 
@@ -233,26 +251,6 @@ function Window({
         setScale(scale_to_staged)
         setStagingXCompenstation(x_compensation)
         setStagingYCompenstation(y_compensation)
-      } else if (stagedSize[0] && stagedSize[1]) {
-        if (size[0] > size[1]) {
-          const scale_to_staged = stagedSize[0] / size[0]
-          const x_compensation = pointer[0] - position[0]
-          const y_compensation = pointer[1] - position[1]
-
-          setRotation(90 * (1 - distance / scaled_distance))
-          setScale(scale_to_staged)
-          setStagingXCompenstation(x_compensation)
-          setStagingYCompenstation(y_compensation)
-        } else {
-          const scale_to_staged = stagedSize[1] / size[1]
-          const x_compensation = pointer[0] - position[0]
-          const y_compensation = pointer[1] - position[1]
-
-          setRotation(90 * (1 - distance / scaled_distance))
-          setScale(scale_to_staged)
-          setStagingXCompenstation(x_compensation)
-          setStagingYCompenstation(y_compensation)
-        }
       }
     }
   }, [pointer, moving, stagingDistance, position, size, stagedSize, scaleX, stagedsWidth])
