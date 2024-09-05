@@ -73,6 +73,8 @@ export interface WindowContextProps {
     maxSize: [number, number] | null
     moving: boolean
     focused: boolean
+    staging: boolean
+    staged: boolean
     setFocused: React.Dispatch<React.SetStateAction<boolean>>
     showResizers: boolean
     setShowResizers: React.Dispatch<React.SetStateAction<boolean>>
@@ -87,6 +89,8 @@ export const WindowContext = createContext<WindowContextProps>({
     maxSize: null,
     moving: false,
     focused: false,
+    staging: false,
+    staged: false,
     showResizers: false,
     setShowResizers: () => {},
     setFocused: () => {},

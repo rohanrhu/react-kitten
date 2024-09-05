@@ -45,6 +45,7 @@ export function Manager({
   const [lmb, setLmb] = useState<boolean>(false)
   const [wheelBusy, setWheelBusy] = useState<boolean>(false)
   const intersectionObserverRef = useRef<IntersectionObserver | null>(null)
+  const prevRect = useRef<DOMRect | null>(null)
 
   const scaleX = useCallback((x: number) => x * scale[0], [scale])
   const scaleY = useCallback((y: number) => y * scale[1], [scale])
@@ -56,7 +57,21 @@ export function Manager({
                                       [ position, pointer, lmb, size, wheelBusy, wheelSpaceSwitch, scale, scaleX, scaleY, revertScaleX, revertScaleY ])
 
   useEffect(() => {!lmb && setWheelBusy(false)}, [lmb])
-                                      
+
+  const onMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const new_pointer: [number, number] = [event.clientX - rect.x, event.clientY - rect.y]
+    setPointer(new_pointer)
+  }, [])
+
+  const onTouchMove = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
+      if (event.touches.length !== 1) return
+      const touch = event.touches[0]
+      const rect = event.currentTarget.getBoundingClientRect()
+      const new_pointer: [number, number] = [touch.clientX - rect.x, touch.clientY - rect.y]
+      setPointer(new_pointer)
+  }, [])
+  
   return <ManagerContext.Provider value={contextProps}>
     <div
       {...(attrs as HTMLAttributes<HTMLDivElement>)}
@@ -66,10 +81,15 @@ export function Manager({
         const observer = new IntersectionObserver((entries) => {
           if (entries.length === 0) return
           const entry = entries[0]
-          if (entry.isIntersecting) {
-            const rect = ref.getBoundingClientRect()
-            setPosition([rect.x, rect.y])
-          }
+          if (!entry.isIntersecting) return
+
+          const rect = ref.getBoundingClientRect()
+
+          if (!prevRect.current || (prevRect.current.x == rect.x &&
+                                    prevRect.current.y == rect.y)) return
+
+          setPosition([rect.x, rect.y])
+          prevRect.current = rect
         }, { threshold: 0 })
         observer.observe(ref)
         intersectionObserverRef.current = observer
@@ -80,18 +100,8 @@ export function Manager({
         transform: `scale(${scale[0]}, ${scale[1]})`,
         ...attrs.style
       }}
-      onMouseMove={event => {
-        const rect = event.currentTarget.getBoundingClientRect()
-        const new_pointer: [number, number] = [event.clientX - rect.x, event.clientY - rect.y]
-        setPointer(new_pointer)
-      }}
-      onTouchMove={event => {
-        if (event.touches.length !== 1) return
-        const touch = event.touches[0]
-        const rect = event.currentTarget.getBoundingClientRect()
-        const new_pointer: [number, number] = [touch.clientX - rect.x, touch.clientY - rect.y]
-        setPointer(new_pointer)
-      }}
+      onMouseMove={onMouseMove}
+      onTouchMove={onTouchMove}
       onMouseDown={() => setLmb(true)}
       onMouseUp={() => setLmb(false)}
       onTouchStart={() => setLmb(true)}

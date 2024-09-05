@@ -72,6 +72,7 @@ function Space({
         onMouseOver={() => setWheelBusy(true)}
         onMouseLeave={() => setWheelBusy(false)}
       ></div>
+      <div className={classNames([styles.Space_windows])}></div>
     </div>
   </SpaceContext.Provider>
 }

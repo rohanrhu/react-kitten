@@ -46,7 +46,7 @@ interface WindowProps extends React.HTMLAttributes<HTMLDivElement> {
   resizable?: boolean
   resizerThreshold?: number
   stagingDistance?: number
-  stagedSize?: [number, number]
+  stagedSize?: [number, number] | [number, null] | [null, number]
   allowOutside?: boolean
   compensatePositionOnViewportResize?: boolean
   onStagedChange: (staged: boolean) => void
@@ -110,8 +110,8 @@ function Window({
   ...attrs
 }: WindowProps) {
   const { size: managerSize, pointer, lmb, setWheelBusy, scaleX, scaleY, revertScaleX, revertScaleY } = useContext(ManagerContext)
-  const { focusedWindow, setFocusedWindow, setLastWindowPosition,
-          windowZIndexCounter, setWindowZIndexCounter, stagedsRef
+  const { stagedsRef, focusedWindow, setFocusedWindow, setLastWindowPosition,
+          windowZIndexCounter, setWindowZIndexCounter, stagedsWidth
   } = useContext(SpaceContext)
   const [showResizers, setShowResizers] = useState(false)
   const resizerMouseMoveTimeoutRef = useRef<Timer>()
@@ -148,15 +148,46 @@ function Window({
   useEffect(() => {
     if (!staged) return
 
-    const width_scale = stagedSize[0] / size[0]
-    const scaled_width = size[0] * width_scale
-    const scaled_height = size[1] * width_scale
-    const height_scale = scaled_height / size[1]
-    const scale_to_staged = [width_scale, height_scale]
-    
-    setStagedScale(scale_to_staged)
-    setScaledStagedSize([scaled_width, scaled_height])
-  }, [staged, size, stagedSize])
+    if (stagedSize[0] && !stagedSize[1]) {
+      const width_scale = (size[1] > size[0]) ? stagedSize[0] / size[1]: stagedSize[0] / size[0]
+      const scaled_width = size[0] * width_scale
+      const scaled_height = size[1] * width_scale
+      const height_scale = scaled_height / size[1]
+      const scale_to_staged = [width_scale, height_scale]
+      
+      setStagedScale(scale_to_staged)
+      setScaledStagedSize([scaled_width, scaled_height])
+    } else if (!stagedSize[0] && stagedSize[1]) {
+      const width_scale = (size[0] > size[1]) ? stagedsWidth / size[0]: stagedSize[ 1] / size[1]
+      const scaled_width = size[0] * width_scale
+      const scaled_height = size[1] * width_scale
+      const height_scale = scaled_height / size[1]
+      const scale_to_staged = [width_scale, height_scale]
+
+      setStagedScale(scale_to_staged)
+      setScaledStagedSize([scaled_width * 0.8, scaled_height * 0.8])
+    } else if (stagedSize[0] && stagedSize[1]) {
+      if (size[0] > size[1]) {
+        const width_scale = stagedSize[0] / size[0]
+        const scaled_width = size[0] * width_scale
+        const scaled_height = size[1] * width_scale
+        const height_scale = scaled_height / size[1]
+        const scale_to_staged = [width_scale, height_scale]
+        
+        setStagedScale(scale_to_staged)
+        setScaledStagedSize([scaled_width, scaled_height])
+      } else {
+        const height_scale = stagedSize[1] / size[1]
+        const scaled_width = size[0] * height_scale
+        const scaled_height = size[1] * height_scale
+        const width_scale = scaled_width / size[0]
+        const scale_to_staged = [width_scale, height_scale]
+
+        setStagedScale(scale_to_staged)
+        setScaledStagedSize([scaled_width, scaled_height])
+      }
+    }
+  }, [staged, size, stagedSize, stagedsWidth])
 
   useEffect(() => {
     if (!staging) return
@@ -184,16 +215,46 @@ function Window({
       setStagingXCompenstation(0)
       setStagingYCompenstation(0)
     } else {
-      const scale_to_staged = (stagedSize[0] + stagedSize[1]) / ((size[0] + size[1]))
-      const rpx = pointer[0] - (position[0] * scale_to_staged)
-      const x_compensation = (rpx < ((size[0] * scale_to_staged) / 2) ? -rpx: rpx)
+      if (stagedSize[0] && !stagedSize[1]) {
+        const scale_to_staged = (size[1] > size[0]) ? stagedSize[0] / size[1]: stagedSize[0] / size[0]
+        const x_compensation = pointer[0] - position[0]
+        const y_compensation = pointer[1] - position[1]
 
-      setRotation(90 * (1 - distance / scaled_distance))
-      setScale(scale_to_staged)
-      setStagingXCompenstation(x_compensation)
-      setStagingYCompenstation(size[1] * -scale_to_staged)
+        setRotation(90 * (1 - distance / scaled_distance))
+        setScale(scale_to_staged)
+        setStagingXCompenstation(x_compensation)
+        setStagingYCompenstation(y_compensation)
+      } else if (!stagedSize[0] && stagedSize[1]) {
+        const scale_to_staged = (size[0] > size[1]) ? stagedsWidth / size[0]: stagedSize[1] / size[1]
+        const x_compensation = pointer[0] - position[0]
+        const y_compensation = pointer[1] - position[1]
+
+        setRotation(90 * (1 - distance / scaled_distance))
+        setScale(scale_to_staged)
+        setStagingXCompenstation(x_compensation)
+        setStagingYCompenstation(y_compensation)
+      } else if (stagedSize[0] && stagedSize[1]) {
+        if (size[0] > size[1]) {
+          const scale_to_staged = stagedSize[0] / size[0]
+          const x_compensation = pointer[0] - position[0]
+
+          setRotation(90 * (1 - distance / scaled_distance))
+          setScale(scale_to_staged)
+          setStagingXCompenstation(x_compensation)
+          setStagingYCompenstation(size[1] * -scale_to_staged)
+        } else {
+          const scale_to_staged = stagedSize[1] / size[1]
+          const x_compensation = pointer[0] - position[0]
+          const y_compensation = pointer[1] - position[1]
+
+          setRotation(90 * (1 - distance / scaled_distance))
+          setScale(scale_to_staged)
+          setStagingXCompenstation(x_compensation)
+          setStagingYCompenstation(y_compensation)
+        }
+      }
     }
-  }, [pointer, moving, stagingDistance, position, size, stagedSize, scaleX])
+  }, [pointer, moving, stagingDistance, position, size, stagedSize, scaleX, stagedsWidth])
 
   useEffect(() => moving ? onMoveStart(): onMoveEnd(), [moving, onMoveStart, onMoveEnd])
 
@@ -281,9 +342,9 @@ function Window({
   const onMoveEndCallback = useCallback(() => setMoving(false), [])
   
   const contextProps = useMemo(() => ({
-    size, position, minSize, maxSize, moving, focused, setFocused, showResizers, setShowResizers,
+    size, position, minSize, maxSize, moving, focused, staging, staged, setFocused, showResizers, setShowResizers,
     onMoveStart: onMoveStartCallback, onMoveEnd: onMoveEndCallback,
-  }), [size, position, minSize, maxSize, moving, focused, showResizers, setShowResizers, onMoveStartCallback, onMoveEndCallback])
+  }), [size, position, minSize, maxSize, moving, focused, staging, staged, showResizers, setShowResizers, onMoveStartCallback, onMoveEndCallback])
   
   const window = <div
       {...(attrs as HTMLAttributes<HTMLDivElement>)}
@@ -300,7 +361,7 @@ function Window({
       style={{
         width: size[0],
         height: size[1],
-        transformOrigin: staged ? 'top left': undefined,
+        transformOrigin: (staged || staging) ? 'top left': undefined,
         transform: staged ? `
           scale(${stagedScale[0]}, ${stagedScale[1]}) 
           translate(0, 0)
@@ -332,6 +393,7 @@ function Window({
         }}
       ></div>
     </div>
+  
   return <WindowContext.Provider value={contextProps}>
     {stagedsRef.current && staged && createPortal(<div
       className={classNames([styles.Window_stagedWindow])}
@@ -548,9 +610,14 @@ function TitleBar({
     onMouseDown={onMouseDown}
     onMouseUp={onMouseUp}
     onTouchStart={onTouchStart}
-    onTouchEnd={() => onTouchEnd()}
-  >
+    onTouchEnd={() => onTouchEnd}
+    >
     {children}
+    <div
+      className={classNames([styles.TitleBar_stagingLayer])}
+      onMouseUp={onMouseUp}
+      onTouchEnd={() => onTouchEnd()}
+    ></div>
   </div>
 }
 
