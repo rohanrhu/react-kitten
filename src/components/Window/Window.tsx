@@ -237,11 +237,12 @@ function Window({
         if (size[0] > size[1]) {
           const scale_to_staged = stagedSize[0] / size[0]
           const x_compensation = pointer[0] - position[0]
+          const y_compensation = pointer[1] - position[1]
 
           setRotation(90 * (1 - distance / scaled_distance))
           setScale(scale_to_staged)
           setStagingXCompenstation(x_compensation)
-          setStagingYCompenstation(size[1] * -scale_to_staged)
+          setStagingYCompenstation(y_compensation)
         } else {
           const scale_to_staged = stagedSize[1] / size[1]
           const x_compensation = pointer[0] - position[0]
