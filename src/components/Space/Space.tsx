@@ -38,6 +38,7 @@ function Space({
   ...attrs
 }: SpaceProps) {
   const { size, pointer, setWheelBusy } = useContext(ManagerContext)
+  const windowsRef = useRef<HTMLDivElement>(null)
   const stagedsRef = useRef<HTMLDivElement>(null)
   const [focusedWindow, setFocusedWindow] = useState<string | null>(null)
   const [lastWindowPosition, setLastWindowPosition] = React.useState<[number, number]>([0, 0])
@@ -47,8 +48,8 @@ function Space({
   useEffect(() => setShowStageds(pointer[0] <= 150), [pointer])
   
   const contextProps = useMemo(() => ({
-    stagedsRef, focusedWindow, setFocusedWindow, lastWindowPosition, setLastWindowPosition, windowZIndexCounter, setWindowZIndexCounter, stagedsWidth
-  }), [stagedsRef, focusedWindow, setFocusedWindow, lastWindowPosition, setLastWindowPosition, windowZIndexCounter, setWindowZIndexCounter, stagedsWidth])
+    windowsRef, stagedsRef, focusedWindow, setFocusedWindow, lastWindowPosition, setLastWindowPosition, windowZIndexCounter, setWindowZIndexCounter, stagedsWidth
+  }), [windowsRef, stagedsRef, focusedWindow, setFocusedWindow, lastWindowPosition, setLastWindowPosition, windowZIndexCounter, setWindowZIndexCounter, stagedsWidth])
 
   return <SpaceContext.Provider value={contextProps}>
     <div
@@ -72,7 +73,7 @@ function Space({
         onMouseOver={() => setWheelBusy(true)}
         onMouseLeave={() => setWheelBusy(false)}
       ></div>
-      <div className={classNames([styles.Space_windows])}></div>
+      <div ref={windowsRef} className={classNames([styles.Space_windows])}></div>
     </div>
   </SpaceContext.Provider>
 }

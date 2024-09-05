@@ -15,6 +15,10 @@
     perspective: 800px;
 }
 
+.Space_windows {
+    display: contents;
+}
+
 .Space_stageds {
     position: absolute;
     top: 0px;

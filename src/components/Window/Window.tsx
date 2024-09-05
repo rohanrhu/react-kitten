@@ -110,7 +110,7 @@ function Window({
   ...attrs
 }: WindowProps) {
   const { size: managerSize, pointer, lmb, setWheelBusy, scaleX, scaleY, revertScaleX, revertScaleY } = useContext(ManagerContext)
-  const { stagedsRef, focusedWindow, setFocusedWindow, setLastWindowPosition,
+  const { windowsRef, stagedsRef, focusedWindow, setFocusedWindow, setLastWindowPosition,
           windowZIndexCounter, setWindowZIndexCounter, stagedsWidth
   } = useContext(SpaceContext)
   const [showResizers, setShowResizers] = useState(false)
@@ -415,7 +415,7 @@ function Window({
     >
       {window}
     </div>, stagedsRef.current)}
-    {!staged && window}
+    {!staged && windowsRef.current && createPortal(window, windowsRef.current)}
   </WindowContext.Provider>
 }
 

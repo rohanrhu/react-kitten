@@ -45,6 +45,7 @@ export const ManagerContext = createContext<ManagerContextProps>({
 })
 
 export interface SpaceContextProps {
+    windowsRef: React.RefObject<HTMLDivElement>
     stagedsWidth: number
     focusedWindow: string | null
     setFocusedWindow: React.Dispatch<React.SetStateAction<string | null>>
@@ -56,6 +57,7 @@ export interface SpaceContextProps {
 }
 
 export const SpaceContext = createContext<SpaceContextProps>({
+    windowsRef: { current: null },
     stagedsWidth: 150,
     focusedWindow: null,
     setFocusedWindow: () => {},
