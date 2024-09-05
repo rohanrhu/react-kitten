@@ -15,3 +15,11 @@ export const version = '0.3.1'
 export function isMobileDevice() {
     return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
+
+export function nonZeroPosition(position: [number, number]): [number, number] {
+    const compensated: [number, number] = [
+        (position[0] < 0) ? 0: position[0],
+        (position[1] < 0) ? 0: position[1]
+    ]
+    return compensated
+}

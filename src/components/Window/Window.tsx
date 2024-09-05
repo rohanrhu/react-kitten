@@ -14,7 +14,7 @@ import React, { useEffect, useState, useCallback, useContext, useRef, useMemo, H
 import { createPortal } from 'react-dom'
 import classNames from 'classnames'
 
-import { isMobileDevice } from '../../kitten'
+import { isMobileDevice, nonZeroPosition } from '../../kitten'
 import { usePosition, useKittenId } from '../../hooks'
 import { ManagerContext, SpaceContext, WindowContext } from '../../contexts'
 
@@ -135,7 +135,7 @@ function Window({
   useEffect(() => {focusedWindow === kittenId ? setFocused(true): setFocused(false)}, [focusedWindow, kittenId])
   useEffect(() => {focused ? onFocus(): onBlur()}, [focused, onFocus, onBlur])
   useEffect(() => setStaging(moving && (pointer[0] < scaleX(stagingDistance))), [moving, pointer, stagingDistance, scaleX])
-  useEffect(() => {!staging && setLastWindowPosition(position)}, [staging, position, setLastWindowPosition])
+  useEffect(() => {!staging && setLastWindowPosition(nonZeroPosition(position))}, [staging, position, setLastWindowPosition, managerSize])
   useEffect(() => {setWheelBusy(moving)}, [moving, setWheelBusy])
 
   useEffect(() => {
