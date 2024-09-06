@@ -289,6 +289,14 @@ function Window({
   }, [managerSize, prevManagerSize, position, size, onPositionChange, compensatePositionOnViewportResize]);
 
   useEffect(() => {
+    if (!(managerSize[0] !== prevManagerSize[0] || managerSize[1] !== prevManagerSize[1])) return
+
+    onPositionChange && onPositionChange(nonZeroPosition(position))
+    setLastWindowPosition(nonZeroPosition(position))
+    setPrevManagerSize(managerSize)
+  }, [managerSize, prevManagerSize, position, onPositionChange, setLastWindowPosition])
+
+  useEffect(() => {
     if (!isMobileDevice()) return
     if (!showResizers) return
     clearTimeout(hideResizersTimeoutRef.current)
