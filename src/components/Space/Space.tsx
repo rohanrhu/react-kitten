@@ -72,6 +72,7 @@ function Space({
         style={{ width: stagedsWidth }}
         onMouseOver={() => setWheelBusy(true)}
         onMouseLeave={() => setWheelBusy(false)}
+        onWheel={event => event.stopPropagation()}
       ></div>
       <div ref={windowsRef} className={classNames([styles.Space_windows])}></div>
     </div>
