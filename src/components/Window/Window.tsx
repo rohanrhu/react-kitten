@@ -20,6 +20,8 @@ import { ManagerContext, SpaceContext, WindowContext } from '../../contexts'
 
 import styles from './Window.module.css'
 
+export const ALWAYS_ON_TOP_Z_INDEX: number = 1000000
+
 type ResizerDirection = 'top' | 'right' | 'bottom' | 'left' |
                         'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
 type OnMayResize = (may_resize: boolean) => void
@@ -45,6 +47,7 @@ interface WindowProps extends React.HTMLAttributes<HTMLDivElement> {
   staged?: boolean
   resizable?: boolean
   resizerThreshold?: number
+  alwaysOnTop?: boolean
   stagingDistance?: number
   stagedSize?: [number, number] | [number, null] | [null, number]
   allowOutside?: boolean
@@ -75,6 +78,7 @@ interface WindowProps extends React.HTMLAttributes<HTMLDivElement> {
  * @param maxSize Maximum size of the window
  * @param resizable If the window is resizable
  * @param resizerThreshold Threshold for showing the resizers
+ * @param alwaysOnTop If the window is always on top
  * @param staged If the window is staged
  * @param stagingDistance Distance for staging the window
  * @param stagedSize Size of the staged window
@@ -95,6 +99,7 @@ function Window({
   maxSize = DEFAULT_MAX_SIZE,
   resizable = DEFAULT_RESIZABLE,
   resizerThreshold = DEFAULT_RESIZER_THRESHOLD,
+  alwaysOnTop = false,
   staged = DEFAUULT_STAGED,
   stagingDistance = DEFAULT_STAGING_DISTANCE,
   stagedSize = DEFAULT_STAGED_SIZE,
@@ -129,6 +134,7 @@ function Window({
   const [scaledStagedSize, setScaledStagedSize] = useState([0, 0])
   const [movingStartPosition, setMovingStartPosition] = useState<[number, number]>(position)
   const [prevManagerSize, setPrevManagerSize] = useState(managerSize)
+  const prevAlwaysOnTopRef = useRef<boolean>(false)
   const hideResizersTimeoutRef = useRef<Timer>()
   
   useEffect(() => {focused && setFocusedWindow(kittenId)}, [kittenId, focused, setFocusedWindow])
@@ -197,13 +203,17 @@ function Window({
   }, [staging, lmb, onStagedChange])
 
   useEffect(() => {
-    if (!focused) return
-    if (focusedWindow !== kittenId) return
-    if (zIndex === windowZIndexCounter) return
+    if (alwaysOnTop == prevAlwaysOnTopRef.current) {
+      if (!focused) return
+      if (focusedWindow !== kittenId) return
+      if (zIndex === windowZIndexCounter) return
+      if (zIndex === windowZIndexCounter + ALWAYS_ON_TOP_Z_INDEX) return
+    }
+    prevAlwaysOnTopRef.current = alwaysOnTop
     const newCounter = windowZIndexCounter + 1
-    setZIndex(newCounter)
+    setZIndex(newCounter + (alwaysOnTop ? ALWAYS_ON_TOP_Z_INDEX: 0))
     setWindowZIndexCounter(newCounter)
-  }, [focused, focusedWindow, windowZIndexCounter, setWindowZIndexCounter, kittenId, zIndex])
+  }, [focused, focusedWindow, windowZIndexCounter, setWindowZIndexCounter, kittenId, zIndex, alwaysOnTop])
   
   useEffect(() => {
     if (!moving) return
