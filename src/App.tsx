@@ -96,10 +96,11 @@ function App() {
 
 function MyWindow({ title }: React.PropsWithChildren & { title?: string }) {
   const [kittenId,] = useKittenId()
-  const [position, setPosition] = usePosition([300, 600])
+  const [position, setPosition] = usePosition([300, 100])
   const [opened, setOpened] = useState(true)
   const [size, setSize] = useSize([500, 400])
   const [staged, setStaged] = useState(false)
+  const [alwaysOnTop,] = useState(false)
   
   const [openedCats, setOpenedCats] = useState<string[]>([])
   const [cats, setCats] = useState<string[]>([])
@@ -116,6 +117,7 @@ function MyWindow({ title }: React.PropsWithChildren & { title?: string }) {
       position={position} onPositionChange={setPosition}
       size={size} onSizeChange={setSize}
       staged={staged} onStagedChange={setStaged}
+      alwaysOnTop={alwaysOnTop}
     >
       <TitleBar onMove={setPosition}>
         <Buttons>
