@@ -10,5 +10,5 @@
  * (MIT License: https://opensource.org/licenses/MIT)
  */
 
-export { Manager, ManagerContext } from './Manager'
-export type { ManagerContextProps } from './Manager'
+export { Manager } from './Manager'
+export { ManagerContext } from './library'

@@ -17,7 +17,7 @@ import { ManagerContext } from '../../contexts'
 
 import styles from './Spaces.module.css'
 
-export interface SpacesProps extends React.HTMLAttributes<HTMLDivElement> {
+interface SpacesProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode
   bounceDelay?: number
   scrollThreshold?: number

@@ -10,22 +10,22 @@
  * (MIT License: https://opensource.org/licenses/MIT)
  */
 
-import React, { createContext, useEffect, useState, useCallback, useContext, useRef, useMemo, HTMLAttributes } from 'react'
+import React, { useEffect, useState, useCallback, useContext, useRef, useMemo, HTMLAttributes } from 'react'
 import { createPortal } from 'react-dom'
 import classNames from 'classnames'
 
 import { isMobileDevice, nonZeroPosition } from '../../kitten'
 import { usePosition, useKittenId } from '../../hooks'
 import { ManagerContext, SpaceContext } from '../../contexts'
-import { WindowEvent, MoveEvent, ResizeEvent, SpaceEvent } from '../../components/Space'
+import { WindowEvent, MoveEvent, ResizeEvent, SpaceEvent } from '../../components/Space/library'
+import { ALWAYS_ON_TOP_Z_INDEX, WindowContext } from './library'
 
 import styles from './Window.module.css'
-
-export const ALWAYS_ON_TOP_Z_INDEX: number = 1000000
 
 type ResizerDirection = 'top' | 'right' | 'bottom' | 'left' |
                         'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
 type OnMayResize = (may_resize: boolean) => void
+type BoundsChangeReason = 'user' | 'system'
 
 const DEFAULT_MIN_SIZE: [number, number] = [100, 100]
 const DEFAULT_MAX_SIZE = null
@@ -37,48 +37,6 @@ const DEFAULT_STAGED_SIZE: [number, number] = [100, 120]
 const DEFAULT_ALLOW_OUTSIDE: boolean = true
 const DEFAULT_COMPENSATE_POSITION_ON_VIEWPORT_RESIZE: boolean = true
 const DEFAULT_CALLBACK = () => {}
-
-export type BoundsChangeReason = 'user' | 'system'
-
-export interface WindowContextProps {
-  size: [number, number]
-  position: [number, number]
-  minSize: [number, number] | null
-  maxSize: [number, number] | null
-  moving: boolean
-  resizing: boolean
-  setResizing: React.Dispatch<React.SetStateAction<boolean>>
-  focused: boolean
-  setFocused: React.Dispatch<React.SetStateAction<boolean>>
-  staging: boolean
-  staged: boolean
-  showResizers: boolean
-  setShowResizers: React.Dispatch<React.SetStateAction<boolean>>
-  onMoveStart: () => void
-  onMoveEnd: () => void
-  onResizeStart: () => void
-  onResizeEnd: () => void
-}
-
-export const WindowContext = createContext<WindowContextProps>({
-  size: [0, 0],
-  position: [0, 0],
-  minSize: null,
-  maxSize: null,
-  moving: false,
-  resizing: false,
-  setResizing: () => {},
-  focused: false,
-  setFocused: () => {},
-  staging: false,
-  staged: false,
-  showResizers: false,
-  setShowResizers: () => {},
-  onMoveStart: () => {},
-  onMoveEnd: () => {},
-  onResizeStart: () => {},
-  onResizeEnd: () => {}
-})
 
 interface WindowProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode
@@ -921,7 +879,7 @@ function StageButton({
   return children
 }
 
-export interface ContentProps extends React.HTMLAttributes<HTMLDivElement> {
+interface ContentProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode,
   onUnfocusedWheel?: (event: React.WheelEvent<HTMLDivElement>) => boolean
 }
@@ -961,7 +919,7 @@ function Content({
   </div>
 }
 
-export interface BasicWindowProps extends React.HTMLAttributes<HTMLDivElement> {
+interface BasicWindowProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode
   title?: string,
   initialSize?: [number, number],
