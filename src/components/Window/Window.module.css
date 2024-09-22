@@ -41,6 +41,8 @@
     transition: all 0.5s !important;
     z-index: 100;
 }
+.Window.Window__snapMoving {
+}
 
 .Window_stagedLayer {
     position: absolute;

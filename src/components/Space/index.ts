@@ -11,4 +11,5 @@
  */
 
 export { Spaces } from './Spaces'
-export { Space } from './Space'
+export { SpaceContext, Space, ToSnap, SpaceEventDispatcher } from './Space'
+export type { SpaceContextProps, SpaceEvent, SpaceEventType, WindowEvent, MoveEvent, ResizeEvent } from './Space'

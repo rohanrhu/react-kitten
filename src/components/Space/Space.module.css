@@ -54,3 +54,85 @@
     pointer-events: all;
     opacity: 1;
 }
+
+.Space_snap {
+    display: flex;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+}
+.Space_snap.Space_snap__show {
+    animation: SnappingHorizontalAppear 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.75) forwards;
+}
+.Space_snap.Space_snap__snapped {
+    animation: SnappingHorizontalAppear 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.75) forwards;
+}
+
+.Space_snap_mover {
+    position: relative;
+    width: 10px;
+    height: 10px;
+    border-radius: 100%;
+    background: white;
+    border-radius: 20px;
+    transition: all 0.5s;
+    cursor: move;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+    animation: SnappingHorizontalBottomToTop 0.75s cubic-bezier(0.68, -0.55, 0.265, 1.75) forwards;
+}
+
+.Space_snap_resizer {
+    position: relative;
+    width: 50%;
+    max-width: 10px;
+    height: 50px;
+    background: white;
+    border-radius: 20px;
+    transition: all 0.5s;
+    cursor: ew-resize;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+    animation: SnappingHorizontalTopToBottom 0.33s cubic-bezier(0.68, -0.55, 0.265, 1.75);
+}
+
+.Space_snap_resizer,
+.Space_snap_mover {
+    transform-origin: center;
+}
+
+@keyframes SnappingHorizontalAppear {
+    0% {
+        scale: 0;
+    }
+    100% {
+        scale: 1;
+    }
+}
+
+@keyframes SnappingHorizontalBottomToTop {
+    0% {
+        transform: translateY(50px);
+    }
+    100% {
+        transform: translateY(0%);
+    }
+}
+
+@keyframes SnappingHorizontalTopToBottom {
+    0% {
+        transform: translateY(-50px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+.SnapMover,
+.SnapResizer {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+}

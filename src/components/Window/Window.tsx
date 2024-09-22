@@ -10,13 +10,14 @@
  * (MIT License: https://opensource.org/licenses/MIT)
  */
 
-import React, { useEffect, useState, useCallback, useContext, useRef, useMemo, HTMLAttributes } from 'react'
+import React, { createContext, useEffect, useState, useCallback, useContext, useRef, useMemo, HTMLAttributes } from 'react'
 import { createPortal } from 'react-dom'
 import classNames from 'classnames'
 
 import { isMobileDevice, nonZeroPosition } from '../../kitten'
 import { usePosition, useKittenId } from '../../hooks'
-import { ManagerContext, SpaceContext, WindowContext } from '../../contexts'
+import { ManagerContext, SpaceContext } from '../../contexts'
+import { WindowEvent, MoveEvent, ResizeEvent, SpaceEvent } from '../../components/Space'
 
 import styles from './Window.module.css'
 
@@ -37,6 +38,48 @@ const DEFAULT_ALLOW_OUTSIDE: boolean = true
 const DEFAULT_COMPENSATE_POSITION_ON_VIEWPORT_RESIZE: boolean = true
 const DEFAULT_CALLBACK = () => {}
 
+export type BoundsChangeReason = 'user' | 'system'
+
+export interface WindowContextProps {
+  size: [number, number]
+  position: [number, number]
+  minSize: [number, number] | null
+  maxSize: [number, number] | null
+  moving: boolean
+  resizing: boolean
+  setResizing: React.Dispatch<React.SetStateAction<boolean>>
+  focused: boolean
+  setFocused: React.Dispatch<React.SetStateAction<boolean>>
+  staging: boolean
+  staged: boolean
+  showResizers: boolean
+  setShowResizers: React.Dispatch<React.SetStateAction<boolean>>
+  onMoveStart: () => void
+  onMoveEnd: () => void
+  onResizeStart: () => void
+  onResizeEnd: () => void
+}
+
+export const WindowContext = createContext<WindowContextProps>({
+  size: [0, 0],
+  position: [0, 0],
+  minSize: null,
+  maxSize: null,
+  moving: false,
+  resizing: false,
+  setResizing: () => {},
+  focused: false,
+  setFocused: () => {},
+  staging: false,
+  staged: false,
+  showResizers: false,
+  setShowResizers: () => {},
+  onMoveStart: () => {},
+  onMoveEnd: () => {},
+  onResizeStart: () => {},
+  onResizeEnd: () => {}
+})
+
 interface WindowProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode
   kittenId: string
@@ -53,8 +96,8 @@ interface WindowProps extends React.HTMLAttributes<HTMLDivElement> {
   allowOutside?: boolean
   compensatePositionOnViewportResize?: boolean
   onStagedChange: (staged: boolean) => void
-  onSizeChange: (size: [number, number]) => void
-  onPositionChange: (position: [number, number]) => void
+  onSizeChange: (size: [number, number], reason: BoundsChangeReason) => void
+  onPositionChange: (position: [number, number], reason: BoundsChangeReason) => void
   onMoveStart?: () => void
   onMoveEnd?: () => void
   onFocus?: () => void
@@ -114,14 +157,16 @@ function Window({
   onBlur = DEFAULT_CALLBACK,
   ...attrs
 }: WindowProps) {
-  const { size: managerSize, pointer, lmb, setWheelBusy, scaleX, scaleY, revertScaleX, revertScaleY } = useContext(ManagerContext)
-  const { windowsRef, stagedsRef, focusedWindow, setFocusedWindow, setLastWindowPosition,
-          windowZIndexCounter, setWindowZIndexCounter, stagedsWidth
+  const { size: managerSize, pointer, setWheelBusy, scaleX, scaleY, revertScaleX, revertScaleY } = useContext(ManagerContext)
+  const { lmb, windowsRef, stagedsRef, focusedWindow, setFocusedWindow, setLastWindowPosition: setSpaceLastWindowPosition,
+          windowZIndexCounter, setWindowZIndexCounter, stagedsWidth, onWindowMoveStart, onWindowMoveEnd, onUserBoundsChangeEnd, onWindowBoundsChanged,
+          snapMargin, toSnap, eventDispatcher: spaceEventDispatcher, unmountedWindows: spaceUnmountedWindows, setUnmountedWindows: setSpaceUnmountedWindows
   } = useContext(SpaceContext)
   const [showResizers, setShowResizers] = useState(false)
   const resizerMouseMoveTimeoutRef = useRef<Timer>()
   const [mayResize, setMayResize] = useState(false)
   const [moving, setMoving] = useState(false)
+  const [resizing, setResizing] = useState(false)
   const [prevMoving, setPrevMoving] = useState(false)
   const [zIndex, setZIndex] = useState(0)
   const [focused, setFocused] = useState(true)
@@ -136,13 +181,42 @@ function Window({
   const [prevManagerSize, setPrevManagerSize] = useState(managerSize)
   const prevAlwaysOnTopRef = useRef<boolean>(false)
   const hideResizersTimeoutRef = useRef<Timer>()
+  const prevResizingRef = useRef(resizing)
+  const [lastWindowPosition, setLastWindowPosition] = useState<[number, number]>(position)
+  const [stagedBy, setStagedBy] = useState<'instant' | 'move'>('instant')
+  const [snapMoving, setSnapMoving] = useState(false)
+
+  const kittenIdRef = useRef(kittenId)
+  useEffect(() => { kittenIdRef.current = kittenId }, [kittenId])
+  const spaceUnmountedWindowsRef = useRef(spaceUnmountedWindows)
+  const setSpaceUnmountedWindowsRef = useRef(setSpaceUnmountedWindows)
+  useEffect(() => { setSpaceUnmountedWindowsRef.current = setSpaceUnmountedWindows }, [setSpaceUnmountedWindows])
+
+  const prevPositionRef = useRef<[number, number]>(position)
+  const prevSizeRef = useRef<[number, number]>(size)
+
+  const onMount = useCallback(() => {
+  }, [])
+
+  const onUnmount = useCallback(() => {
+    setSpaceUnmountedWindowsRef.current([...spaceUnmountedWindowsRef.current, kittenIdRef.current])
+  }, [])
+
+  const onMountRef = useRef(onMount)
+  const onUnmountRef = useRef(onUnmount)
+  
+  useEffect(() => {
+    onMountRef.current()
+    return onUnmountRef.current
+  }, [])
   
   useEffect(() => {focused && setFocusedWindow(kittenId)}, [kittenId, focused, setFocusedWindow])
   useEffect(() => {focusedWindow === kittenId ? setFocused(true): setFocused(false)}, [focusedWindow, kittenId])
   useEffect(() => {focused ? onFocus(): onBlur()}, [focused, onFocus, onBlur])
   useEffect(() => setStaging(moving && (pointer[0] < scaleX(stagingDistance))), [moving, pointer, stagingDistance, scaleX])
-  useEffect(() => {!staging && setLastWindowPosition(nonZeroPosition(position))}, [staging, position, setLastWindowPosition, managerSize])
+  useEffect(() => {!staging && setSpaceLastWindowPosition(nonZeroPosition(position))}, [staging, position, setSpaceLastWindowPosition, managerSize])
   useEffect(() => {setWheelBusy(moving)}, [moving, setWheelBusy])
+  useEffect(() => setLastWindowPosition(nonZeroPosition(position)), [position])
 
   useEffect(() => {
     if (moving && !prevMoving) {
@@ -193,11 +267,19 @@ function Window({
         setScaledStagedSize([scaled_width, scaled_height])
       }
     }
-  }, [staged, size, stagedSize, stagedsWidth])
+  }, [staged, size, stagedSize, stagedsWidth, lastWindowPosition])
+
+  useEffect(() => { if (!staged) setStagedBy('instant') }, [staged])
+  
+  useEffect(() => {
+    onWindowBoundsChanged(kittenId, position, size, true, resizing, staged)
+    onUserBoundsChangeEnd(kittenId, position, size, false, resizing, staged)
+  }, [staged]) // eslint-disable-line
 
   useEffect(() => {
     if (!staging) return
     if (lmb) return
+    if (staging) setStagedBy('move')
     setStaging(false)
     onStagedChange(true)
   }, [staging, lmb, onStagedChange])
@@ -271,13 +353,13 @@ function Window({
     if (allowOutside)
       return
     if (position[0] + size[0] > managerSize[0])
-      onPositionChange([managerSize[0] - size[0], position[1]])
+      onPositionChange([managerSize[0] - size[0], position[1]], 'system')
     if (position[1] + size[1] > managerSize[1])
-      onPositionChange([position[0], managerSize[1] - size[1]])
+      onPositionChange([position[0], managerSize[1] - size[1]], 'system')
     if (position[0] < 0)
-      onPositionChange([0, position[1]])
+      onPositionChange([0, position[1]], 'system')
     if (position[1] < 0)
-      onPositionChange([position[0], 0])
+      onPositionChange([position[0], 0], 'system')
   }, [allowOutside, position, size, managerSize, onPositionChange])
 
   useEffect(() => {
@@ -293,7 +375,7 @@ function Window({
       y = managerSize[1] - size[1]
     
     if (x !== position[0] || y !== position[1])
-      onPositionChange([x, y])
+      onPositionChange([x, y], 'system')
     
     setPrevManagerSize(managerSize)
   }, [managerSize, prevManagerSize, position, size, onPositionChange, compensatePositionOnViewportResize]);
@@ -301,10 +383,10 @@ function Window({
   useEffect(() => {
     if (!(managerSize[0] !== prevManagerSize[0] || managerSize[1] !== prevManagerSize[1])) return
 
-    onPositionChange && onPositionChange(nonZeroPosition(position))
-    setLastWindowPosition(nonZeroPosition(position))
+    onPositionChange && onPositionChange(nonZeroPosition(position), 'system')
+    setSpaceLastWindowPosition(nonZeroPosition(position))
     setPrevManagerSize(managerSize)
-  }, [managerSize, prevManagerSize, position, onPositionChange, setLastWindowPosition])
+  }, [managerSize, prevManagerSize, position, onPositionChange, setSpaceLastWindowPosition])
 
   useEffect(() => {
     if (!isMobileDevice()) return
@@ -312,6 +394,70 @@ function Window({
     clearTimeout(hideResizersTimeoutRef.current)
     hideResizersTimeoutRef.current = setTimeout(() => setShowResizers(false), 2500)
   }, [showResizers])
+
+  useEffect(() => {
+    if ((prevPositionRef.current[0] === position[0]) && (prevPositionRef.current[1] === position[1]) && (prevSizeRef.current[0] === size[0]) && (prevSizeRef.current[1] === size[1]))
+      return
+    onWindowBoundsChanged(kittenId, position, size, moving, resizing, staged)
+  }, [kittenId, position, size, moving, resizing, staged, onWindowBoundsChanged])
+
+  useEffect(() => {
+    if (!toSnap?.newPosition || !toSnap?.newSize) return
+    if (toSnap.target.id != kittenId) return
+    const currentAndOthers = toSnap.getCurrentAndOthers(kittenId)
+    if (!currentAndOthers) return
+    const [current, others] = currentAndOthers
+    if (!current || !others) return
+
+    onPositionChange(toSnap.newPosition, 'system')
+    onSizeChange(toSnap.newSize, 'system')
+  }, [toSnap, kittenId, onPositionChange, onSizeChange, snapMargin])
+
+  const moveStartEventCallback = useCallback((event: SpaceEvent<WindowEvent>) => {
+    if (event.target.id !== kittenId) return
+    setSnapMoving(true)
+  }, [kittenId, setSnapMoving])
+
+  const moveEndEventCallback = useCallback((event: SpaceEvent<WindowEvent>) => {
+    if (event.target.id !== kittenId) return
+    setSnapMoving(false)
+  }, [kittenId, setSnapMoving])
+  
+  const moveEventCallback = useCallback((event: SpaceEvent<MoveEvent>) => {
+    if (event.target.id !== kittenId) return
+    const newPosition: [number, number] = [position[0] + event.positionDelta[0], position[1] + event.positionDelta[1]]
+    onPositionChange(newPosition, 'user')
+    setSpaceLastWindowPosition(newPosition)
+  }, [kittenId, position, onPositionChange, setSpaceLastWindowPosition])
+  
+  const resizeEventCallback = useCallback((event: SpaceEvent<ResizeEvent>) => {
+    if (event.target.id !== kittenId) return
+    const newSize: [number, number] = [size[0] + event.sizeDelta[0], size[1] + event.sizeDelta[1]]
+    if (minSize) {
+      if (newSize[0] < minSize[0]) newSize[0] = minSize[0]
+      if (newSize[1] < minSize[1]) newSize[1] = minSize[1]
+    }
+    if (maxSize) {
+      if (newSize[0] > maxSize[0]) newSize[0] = maxSize[0]
+      if (newSize[1] > maxSize[1]) newSize[1] = maxSize[1]
+    }
+    onSizeChange([newSize[0], newSize[1]], 'user')
+  }, [kittenId, size, onSizeChange, minSize, maxSize])
+  
+  useEffect(() => {
+    if (!spaceEventDispatcher) return
+    
+    spaceEventDispatcher.removeListener('move-start', moveStartEventCallback)
+    spaceEventDispatcher.removeListener('move-end', moveEndEventCallback)
+    spaceEventDispatcher.removeListener('move', moveEventCallback)
+    spaceEventDispatcher.removeListener('resize', resizeEventCallback)
+
+    spaceEventDispatcher.setListener('move-start', moveStartEventCallback)
+    spaceEventDispatcher.setListener('move-end', moveEndEventCallback)
+    spaceEventDispatcher.setListener('move', moveEventCallback)
+    spaceEventDispatcher.setListener('resize', resizeEventCallback)
+
+  }, [kittenId, spaceEventDispatcher, moveEventCallback, resizeEventCallback, moveStartEventCallback, moveEndEventCallback])
 
   const onResize = useCallback((size: [number, number], delta: [number, number]) => {
     const new_size: [number, number] = [size[0] + delta[0], size[1] + delta[1]]
@@ -326,7 +472,7 @@ function Window({
     }
 
     if (size[0] !== new_size[0] || size[1] !== new_size[1])
-      onSizeChange(new_size)
+      onSizeChange(new_size, 'user')
   }, [onSizeChange, minSize, maxSize])
 
   const onMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
@@ -355,13 +501,41 @@ function Window({
     setShowResizers(false)
   }, [])
 
-  const onMoveStartCallback = useCallback(() => setMoving(true), [])
-  const onMoveEndCallback = useCallback(() => setMoving(false), [])
+  const onMoveStartCallback = useCallback(() => {
+    setMoving(true)
+    onWindowMoveStart(kittenId, position, size, true, resizing, staged)
+  }, [onWindowMoveStart, kittenId, position, size, resizing, staged])
+  const onMoveEndCallback = useCallback(() => {
+    setMoving(false)
+    onWindowMoveEnd(kittenId, position, size, false, resizing, staged)
+    onUserBoundsChangeEnd(kittenId, position, size, false, resizing, staged)
+  }, [onWindowMoveEnd, onUserBoundsChangeEnd, kittenId, position, size, resizing, staged])
+  
+  const onResizeStartCallback = useCallback(() => {}, [])
+
+  const onResizeEndCallback = useCallback(() => {
+    onUserBoundsChangeEnd(kittenId, position, size, moving, false, staged)
+  }, [onUserBoundsChangeEnd, kittenId, position, size, moving, staged])
+
+  useEffect(() => {
+    if (!prevResizingRef.current && resizing)
+      onResizeStartCallback()
+    else if (prevResizingRef.current && !resizing)
+      onResizeEndCallback()
+    prevResizingRef.current = resizing
+  }, [resizing, onResizeStartCallback, onResizeEndCallback])
+
+  useEffect(() => { prevPositionRef.current = position }, [position])
+  useEffect(() => { prevSizeRef.current = size }, [size])
   
   const contextProps = useMemo(() => ({
-    size, position, minSize, maxSize, moving, focused, staging, staged, setFocused, showResizers, setShowResizers,
-    onMoveStart: onMoveStartCallback, onMoveEnd: onMoveEndCallback,
-  }), [size, position, minSize, maxSize, moving, focused, staging, staged, showResizers, setShowResizers, onMoveStartCallback, onMoveEndCallback])
+    size, position, minSize, maxSize, moving, resizing, setResizing, focused, setFocused, staging, staged, showResizers, setShowResizers,
+    onResizeStart: onResizeStartCallback, onResizeEnd: onResizeEndCallback, onMoveStart: onMoveStartCallback, onMoveEnd: onMoveEndCallback,
+  }), [size, position, minSize, maxSize, moving, resizing, setResizing, focused, staging, staged, showResizers, setShowResizers, onResizeStartCallback, onResizeEndCallback, onMoveStartCallback, onMoveEndCallback])
+  
+  const resizersOnMoveCallback = useCallback((position: [number, number]) => {
+    onPositionChange(position, 'user')
+  }, [onPositionChange])
   
   const window = <div
       {...(attrs as HTMLAttributes<HTMLDivElement>)}
@@ -373,6 +547,7 @@ function Window({
         { [styles.Window__staging]: staging },
         { [styles.Window__staged]: staged },
         { [styles.Window__focused]: focused },
+        { [styles.Window__snapMoving]: snapMoving },
       ])}
       draggable={false}
       style={{
@@ -387,9 +562,9 @@ function Window({
           scale(${scale})
         `: undefined),
         translate: staged ? undefined: (
-          staging ? `${revertScaleX(position[0]) + scaleX(stagingXCompenstation)}px ${revertScaleY(position[1]) + scaleY(stagingYCompenstation)}px`
+          staging ? `${revertScaleX(position[0]) + revertScaleX(stagingXCompenstation)}px ${revertScaleY(position[1]) + revertScaleY(stagingYCompenstation)}px`
                   : `${revertScaleX(position[0])}px ${revertScaleY(position[1])}px`),
-        zIndex: zIndex,
+        zIndex: zIndex + (snapMoving ? 10000: 0),
         ...attrs.style
       }}
       onMouseMove={onMouseMove}
@@ -399,13 +574,14 @@ function Window({
       {resizable && <Resizers
         onMayResize={setMayResize}
         onResize={onResize}
-        onMove={onPositionChange}
+        onMove={resizersOnMoveCallback}
       />}
       <div
         className={classNames([styles.Window_stagedLayer])}
         onClick={() => {
           onStagedChange(false)
-          onPositionChange(movingStartPosition)
+          if (stagedBy == 'move')
+            onPositionChange(movingStartPosition, 'user')
           setFocused(true)
         }}
       ></div>
@@ -426,7 +602,8 @@ function Window({
       onTouchEnd={() => setWheelBusy(false)}
       onClick={() => {
         onStagedChange(false)
-        onPositionChange(movingStartPosition)
+        if (stagedBy == 'move')
+          onPositionChange(movingStartPosition, 'user')
         setFocused(true)
       }}
     >
@@ -477,12 +654,17 @@ function Resizer({
   onResize,
   onMove
 }: ResizerProps) {
-  const { position: managerPosition, pointer, lmb, setPointer, scaleX, scaleY, revertScaleX, revertScaleY, setWheelBusy } = useContext(ManagerContext)
-  const { size, position } = useContext(WindowContext)
+  const { position: managerPosition, pointer, setPointer, scaleX, scaleY, revertScaleX, revertScaleY, setWheelBusy } = useContext(ManagerContext)
+  const { lmb } = useContext(SpaceContext)
+  const { size, position, setResizing } = useContext(WindowContext)
   const [dragging, setDragging] = useState(false)
   const sizeRef = useRef(size)
   const positionRef = useRef(position)
   const prevDragPositionRef = useRef([0, 0])
+
+  useEffect(() => {
+    setResizing(dragging)
+  }, [dragging, setResizing])
 
   const onResizeCallback = useCallback((size: [number, number], delta: [number, number]) => {
     onResize(size, delta)
@@ -580,30 +762,50 @@ function TitleBar({
   onMove = () => {},
   ...attrs
 }: TitleBarProps) {
-  const { position: managerPosition, pointer, lmb, setWheelBusy, setPointer } = useContext(ManagerContext)
+  const { position: managerPosition, pointer, setWheelBusy, setPointer } = useContext(ManagerContext)
+  const { lmb } = useContext(SpaceContext)
   const { position, setFocused, onMoveStart, onMoveEnd, setShowResizers } = useContext(WindowContext)
-  const [moving, setMoving] = useState(false)
+  const [dragging, setDragging] = useState(false)
   const [movingPosition, setMovingPosition] = useState<[number, number]>(position)
   const moveStartPointerRef = useRef<[number, number]>([0, 0])
+  const onMoveStartRef = useRef(onMoveStart)
+  const onMoveEndRef = useRef(onMoveEnd)
 
-  useEffect(() => moving ? onMoveStart(): onMoveEnd(), [moving, onMoveStart, onMoveEnd])
+  useEffect(() => {
+    onMoveStartRef.current = onMoveStart
+    onMoveEndRef.current = onMoveEnd
+  }, [onMoveStart, onMoveEnd])
+
+  useEffect(() => {
+    if (dragging) {
+      onMoveStartRef.current()
+    } else {
+      onMoveEndRef.current()
+    }
+  }, [dragging])
   useEffect(() => onMove([movingPosition[0], movingPosition[1]]), [movingPosition, onMove])
 
   useEffect(() => {
-    if (!moving) return
+    if (!dragging) return
     setMovingPosition([pointer[0] - moveStartPointerRef.current[0], pointer[1] - moveStartPointerRef.current[1]])
-  }, [moving, pointer, moveStartPointerRef])
+  }, [dragging, pointer, moveStartPointerRef])
   
-  useEffect(() => {!lmb && setMoving(false)}, [lmb])
+  useEffect(() => {
+    if (!dragging) return
+    if (lmb) return
+    setDragging(false)
+  }, [lmb, dragging])
 
   const onMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     setFocused(true)
-    setMoving(true)
+    setDragging(true)
     const rect = event.currentTarget.getBoundingClientRect()
     moveStartPointerRef.current = [event.clientX - rect.x, event.clientY - rect.y]
   }, [setFocused])
 
-  const onMouseUp = useCallback(() => setMoving(false), [])
+  const onMouseUp = useCallback(() => {
+    setDragging(false)
+  }, [])
 
   const onTouchStart = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
     if (event.touches.length !== 1) return
@@ -613,16 +815,16 @@ function TitleBar({
     moveStartPointerRef.current = [touch.clientX - rect.x, touch.clientY - rect.y]
     setPointer(new_pointer)
     setWheelBusy(true)
-    setMoving(true)
+    setDragging(true)
     setFocused(true)
     setShowResizers(true)
   }, [setWheelBusy, setFocused, setShowResizers, setPointer, managerPosition])
 
-  const onTouchEnd = useCallback(() => setMoving(false), [])
+  const onTouchEnd = useCallback(() => setDragging(false), [])
   
   return <div
     {...(attrs as React.HTMLAttributes<HTMLDivElement>)}
-    className={`${classNames([styles.TitleBar, moving && styles.TitleBar__dragging])} ${typeof attrs.className !== 'undefined' ? attrs.className : ''}`}
+    className={`${classNames([styles.TitleBar, dragging && styles.TitleBar__dragging])} ${typeof attrs.className !== 'undefined' ? attrs.className : ''}`}
     draggable={false}
     onMouseDown={onMouseDown}
     onMouseUp={onMouseUp}

@@ -10,4 +10,5 @@
  * (MIT License: https://opensource.org/licenses/MIT)
  */
 
-export { Window, BasicWindow, TitleBar, Title, Buttons, CloseButton, StageButton, Content } from './Window'
+export { WindowContext, Window, BasicWindow, TitleBar, Title, Buttons, CloseButton, StageButton, Content } from './Window'
+export type { WindowContextProps } from './Window'
