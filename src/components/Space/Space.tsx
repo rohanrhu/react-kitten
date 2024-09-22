@@ -118,6 +118,17 @@ export function Space({
   }, [unmountedWindows])
   
   const onWindowBoundsChange = useCallback((id: string, position: [number, number], size: [number, number], moving: boolean, resizing: boolean, staged: boolean) => {
+    if (!snap) {
+      windowsRef.current.set(new SpaceWindow(id, position, size, moving, resizing, staged))
+
+      setToSnap(null)
+      setSnapping(null)
+      snapsRef.current = []
+      setSnaps([])
+
+      return
+    }
+    
     if (!snapsRef.current || staged) {
       setToSnap(null)
       setSnapping(null)
@@ -201,7 +212,7 @@ export function Space({
         if (!newSnapping.equals(snapping)) setSnapping(newSnapping)
       }
     }
-  }, [snapThreshold, snapWith, snapping, scaleX, scaleY])
+  }, [snap, snapThreshold, snapWith, snapping, scaleX, scaleY])
 
   const onWindowMoveStart = useCallback(() => {}, [])
   const onWindowMoveEnd = useCallback(() => {}, [])
