@@ -10,8 +10,6 @@
  * (MIT License: https://opensource.org/licenses/MIT)
  */
 
-import { SpaceEventName } from "./components/Space/Space";
-
 export const version = '0.4.0'
 
 export function isMobileDevice() {
@@ -53,7 +51,7 @@ export class EventDispatcher<T, E> {
     else listeners.push(listener as any) // eslint-disable-line @typescript-eslint/no-explicit-any
   }
 
-  dispatch(name: SpaceEventName, event: E) {
+  dispatch(name: T, event: E) {
     const listeners = this.listeners.get(name as any) // eslint-disable-line @typescript-eslint/no-explicit-any
     if (!listeners) return
     listeners.forEach(listener => listener(event))
