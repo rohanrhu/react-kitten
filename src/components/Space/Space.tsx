@@ -86,8 +86,9 @@ export function Space({
   snapWith = DEFAULT_SNAP_WITH,
   ...attrs
 }: SpaceProps) {
-  const { size, pointer, setWheelBusy, scaleX, scaleY, revertScaleX, revertScaleY } = useContext(ManagerContext)
+  const { size, setWheelBusy, scaleX, scaleY, revertScaleX, revertScaleY } = useContext(ManagerContext)
   const [lmb, setLmb] = useState<boolean>(false)
+  const [pointer, setPointer] = useState<[number, number]>([0, 0])
   const windowsContainerRef = useRef<HTMLDivElement>(null)
   const stagedsRef = useRef<HTMLDivElement>(null)
   const [focusedWindow, setFocusedWindow] = useState<string | null>(null)
@@ -272,11 +273,25 @@ export function Space({
   }, [focusedWindow, windowZIndexCounter])
   
   const contextProps = useMemo(() => ({
-    lmb, windowsRef: windowsContainerRef, stagedsRef, focusedWindow, setFocusedWindow, lastWindowPosition,
+    lmb, pointer, setPointer, windowsRef: windowsContainerRef, stagedsRef, focusedWindow, setFocusedWindow, lastWindowPosition,
     setLastWindowPosition, windowZIndexCounter, setWindowZIndexCounter, stagedsWidth, snap, snapMargin, snapThreshold, toSnap, onWindowMoveStart, onWindowMoveEnd, onWindowBoundsChanged: onWindowBoundsChange, onUserBoundsChangeEnd, eventDispatcher, unmountedWindows, setUnmountedWindows
-  }), [lmb, windowsContainerRef, stagedsRef, focusedWindow, setFocusedWindow, lastWindowPosition,
+  }), [lmb, pointer, setPointer, windowsContainerRef, stagedsRef, focusedWindow, setFocusedWindow, lastWindowPosition,
     setLastWindowPosition, windowZIndexCounter, setWindowZIndexCounter, stagedsWidth, snap, snapMargin, snapThreshold, toSnap, onWindowMoveStart, onWindowMoveEnd, onWindowBoundsChange, onUserBoundsChangeEnd, eventDispatcher, unmountedWindows, setUnmountedWindows])
 
+  const onMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const new_pointer: [number, number] = [event.clientX - rect.x, event.clientY - rect.y]
+    setPointer(new_pointer)
+  }, [])
+
+  const onTouchMove = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
+      if (event.touches.length !== 1) return
+      const touch = event.touches[0]
+      const rect = event.currentTarget.getBoundingClientRect()
+      const new_pointer: [number, number] = [touch.clientX - rect.x, touch.clientY - rect.y]
+      setPointer(new_pointer)
+  }, [])
+    
   return <SpaceContext.Provider value={contextProps}>
     <div
       {...(attrs as HTMLAttributes<HTMLDivElement>)}
@@ -290,6 +305,8 @@ export function Space({
         height: size[1],
         ...attrs.style
       }}
+      onMouseMove={onMouseMove}
+      onTouchMove={onTouchMove}
       onMouseDown={() => setLmb(true)}
       onMouseUp={() => setLmb(false)}
       onTouchStart={() => setLmb(true)}

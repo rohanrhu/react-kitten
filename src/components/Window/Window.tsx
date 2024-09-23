@@ -115,8 +115,8 @@ function Window({
   onBlur = DEFAULT_CALLBACK,
   ...attrs
 }: WindowProps) {
-  const { size: managerSize, pointer, setWheelBusy, scaleX, scaleY, revertScaleX, revertScaleY } = useContext(ManagerContext)
-  const { lmb, windowsRef, stagedsRef, focusedWindow, setFocusedWindow, setLastWindowPosition: setSpaceLastWindowPosition,
+  const { size: managerSize, setWheelBusy, scaleX, scaleY, revertScaleX, revertScaleY } = useContext(ManagerContext)
+  const { lmb, pointer, windowsRef, stagedsRef, focusedWindow, setFocusedWindow, setLastWindowPosition: setSpaceLastWindowPosition,
           windowZIndexCounter, setWindowZIndexCounter, stagedsWidth, onWindowMoveStart, onWindowMoveEnd, onUserBoundsChangeEnd, onWindowBoundsChanged,
           snapMargin, toSnap, eventDispatcher: spaceEventDispatcher, unmountedWindows: spaceUnmountedWindows, setUnmountedWindows: setSpaceUnmountedWindows
   } = useContext(SpaceContext)
@@ -612,8 +612,8 @@ function Resizer({
   onResize,
   onMove
 }: ResizerProps) {
-  const { position: managerPosition, pointer, setPointer, scaleX, scaleY, revertScaleX, revertScaleY, setWheelBusy } = useContext(ManagerContext)
-  const { lmb } = useContext(SpaceContext)
+  const { position: managerPosition, scaleX, scaleY, revertScaleX, revertScaleY, setWheelBusy } = useContext(ManagerContext)
+  const { lmb, pointer, setPointer } = useContext(SpaceContext)
   const { size, position, setResizing } = useContext(WindowContext)
   const [dragging, setDragging] = useState(false)
   const sizeRef = useRef(size)
@@ -720,8 +720,8 @@ function TitleBar({
   onMove = () => {},
   ...attrs
 }: TitleBarProps) {
-  const { position: managerPosition, pointer, setWheelBusy, setPointer } = useContext(ManagerContext)
-  const { lmb } = useContext(SpaceContext)
+  const { position: managerPosition, setWheelBusy, setPointer } = useContext(ManagerContext)
+  const { lmb, pointer } = useContext(SpaceContext)
   const { position, setFocused, onMoveStart, onMoveEnd, setShowResizers } = useContext(WindowContext)
   const [dragging, setDragging] = useState(false)
   const [movingPosition, setMovingPosition] = useState<[number, number]>(position)

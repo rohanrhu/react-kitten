@@ -140,6 +140,8 @@ export type SpaceWindowBoundsUpdateEventCallback = (id: string, position: [numbe
 
 export interface SpaceContextProps {
     lmb: boolean
+    pointer: [number, number]
+    setPointer: React.Dispatch<React.SetStateAction<[number, number]>>
     windowsRef: React.RefObject<HTMLDivElement>
     stagedsWidth: number
     focusedWindow: string | null
@@ -164,6 +166,8 @@ export interface SpaceContextProps {
 
 export const SpaceContext = createContext<SpaceContextProps>({
     lmb: false,
+    pointer: [0, 0],
+    setPointer: () => {},
     windowsRef: { current: null },
     stagedsWidth: 150,
     focusedWindow: null,
