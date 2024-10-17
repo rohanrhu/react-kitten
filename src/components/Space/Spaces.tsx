@@ -44,7 +44,7 @@ function Spaces({
   space = 0,
   onSpaceChange = () => {},
   ...attrs
-}: SpacesProps) {
+}: Readonly<SpacesProps>) {
   const { size, wheelBusy, scaleX, scaleY, wheelSpaceSwitch } = useContext(ManagerContext)
   const [scrollX, setScrollX] = useState(0)
   const bounceTimeoutRef = useRef<Timer>()

@@ -85,7 +85,7 @@ export function Space({
   snapThreshold = DEFAULT_SNAP_THRESHOLD,
   snapWith = DEFAULT_SNAP_WITH,
   ...attrs
-}: SpaceProps) {
+}: Readonly<SpaceProps>) {
   const { size, setWheelBusy, scaleX, scaleY, revertScaleX, revertScaleY } = useContext(ManagerContext)
   const [lmb, setLmb] = useState<boolean>(false)
   const [pointer, setPointer] = useState<[number, number]>([0, 0])
@@ -417,7 +417,7 @@ function SnapMover({
   onMove = () => {},
   onMoveStart = () => {},
   onMoveEnd = () => {}
-}: SnapMoverProps) {
+}: Readonly<SnapMoverProps>) {
   const { pointer } = useContext(ManagerContext)
   const { lmb } = useContext(SpaceContext)
   const [dragging, setDragging] = useState<boolean>(false)
@@ -462,7 +462,7 @@ function SnapResizer({
   onResize,
   onResizeStart = () => {},
   onResizeEnd = () => {}
-}: SnapResizerProps) {
+}: Readonly<SnapResizerProps>) {
   const { pointer } = useContext(ManagerContext)
   const { lmb } = useContext(SpaceContext)
   

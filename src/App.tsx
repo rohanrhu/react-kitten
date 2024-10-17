@@ -72,7 +72,7 @@ function App() {
             <p>Window content</p>
           </MyWindow>
         </Space>
-        {Array.from({ length: SPACES_NUM }).map((_, i) => <Space key={i}>
+        {Array.from({ length: SPACES_NUM }).map((_, i) => <Space key={(() => i)()}>
           <Header />
           <h1 className="">Space {i}</h1>
           <p>Space {i} Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus repellat, inventore dolores cum aliquid nam. Ex in deleniti minima cum tempora eum placeat perspiciatis, quasi, quod, iusto a consequuntur cumque.</p>
@@ -134,7 +134,7 @@ function MyWindow({ title }: React.PropsWithChildren & { title?: string }) {
         Open Window
       </button>
     </div>}
-    {openedCats.map((cat, i) => <BasicWindow key={i} title="Cat" initialSize={[400, 300]}>
+    {openedCats.map((cat, i) => <BasicWindow key={(() => i)()} title="Cat" initialSize={[400, 300]}>
       <img src={cat} alt="cat" style={{ width: '100%', height: 'auto' }} />
     </BasicWindow>)}
   </>
@@ -150,7 +150,7 @@ function CatList({ cats, onCatClick }: React.PropsWithChildren & { cats: string[
   }}>
     {cats.map((cat, i) =>
       <img
-        key={i} src={cat} alt="cat"
+        key={(() => i)()} src={cat} alt="cat"
         style={{
           width: '100%',
           height: 'auto',

@@ -29,7 +29,7 @@ export function nonZeroPosition(position: [number, number]): [number, number] {
 }
 
 export class EventDispatcher<T, E> {
-  private listeners: Map<T, ((event: E) => void)[]> = new Map()
+  private readonly listeners: Map<T, ((event: E) => void)[]> = new Map()
 
   addListener<C>(type: T, listener: (event: C) => void) {
     const listeners = this.listeners.get(type)

@@ -39,7 +39,7 @@ export function Manager({
   scale = DEFAULT_SCALE,
   wheelSpaceSwitch = true,
   ...attrs
-}: ManagerProps) {
+}: Readonly<ManagerProps>) {
   const [position, setPosition] = useState<[number, number]>([0, 0])
   const [pointer, setPointer] = useState<[number, number]>([0, 0])
   const [lmb, setLmb] = useState<boolean>(false)

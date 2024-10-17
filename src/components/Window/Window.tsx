@@ -114,7 +114,7 @@ function Window({
   onFocus = DEFAULT_CALLBACK,
   onBlur = DEFAULT_CALLBACK,
   ...attrs
-}: WindowProps) {
+}: Readonly<WindowProps>) {
   const { size: managerSize, setWheelBusy, scaleX, scaleY, revertScaleX, revertScaleY } = useContext(ManagerContext)
   const { lmb, pointer, windowsRef, stagedsRef, focusedWindow, setFocusedWindow, setLastWindowPosition: setSpaceLastWindowPosition,
           windowZIndexCounter, setWindowZIndexCounter, stagedsWidth, onWindowMoveStart, onWindowMoveEnd, onUserBoundsChangeEnd, onWindowBoundsChanged,
@@ -581,7 +581,7 @@ function Resizers({
   onMayResize,
   onResize = () => {},
   onMove = () => {},
-}: ResizersProps) {
+}: Readonly<ResizersProps>) {
   const onResizeCallback = useCallback((size: [number, number], delta: [number, number]) => {
     onResize(size, delta)
   }, [onResize])
@@ -611,7 +611,7 @@ function Resizer({
   onMayResize,
   onResize,
   onMove
-}: ResizerProps) {
+}: Readonly<ResizerProps>) {
   const { position: managerPosition, scaleX, scaleY, revertScaleX, revertScaleY, setWheelBusy } = useContext(ManagerContext)
   const { lmb, pointer, setPointer } = useContext(SpaceContext)
   const { size, position, setResizing } = useContext(WindowContext)
@@ -719,7 +719,7 @@ function TitleBar({
   children = null,
   onMove = () => {},
   ...attrs
-}: TitleBarProps) {
+}: Readonly<TitleBarProps>) {
   const { position: managerPosition, setWheelBusy, setPointer } = useContext(ManagerContext)
   const { lmb, pointer } = useContext(SpaceContext)
   const { position, setFocused, onMoveStart, onMoveEnd, setShowResizers } = useContext(WindowContext)
@@ -801,7 +801,7 @@ function TitleBar({
 /**
  * @description Title component, for the title of the window.
  */
-function Title({ children = null, ...attrs }: React.HTMLAttributes<HTMLDivElement>) {
+function Title({ children = null, ...attrs }: Readonly<React.HTMLAttributes<HTMLDivElement>>) {
   return <div
     {...(attrs as HTMLAttributes<HTMLDivElement>)}
     className={`${classNames([styles.Title])} ${typeof attrs.className !== 'undefined' ? attrs.className : ''}`}
@@ -814,7 +814,7 @@ function Title({ children = null, ...attrs }: React.HTMLAttributes<HTMLDivElemen
 /**
  * @description Buttons component, for the buttons of the window.
  */
-function Buttons({ children = null, ...attrs }: React.HTMLAttributes<HTMLDivElement>) {
+function Buttons({ children = null, ...attrs }: Readonly<React.HTMLAttributes<HTMLDivElement>>) {
   return <div
     {...(attrs as HTMLAttributes<HTMLDivElement>)}
     className={`${classNames([styles.Buttons])} ${typeof attrs.className !== 'undefined' ? attrs.className : ''}`}
@@ -848,7 +848,7 @@ function CloseButton({
     ✖︎
   </div>,
   onClick = () => {},
-}: CloseButtonProps) {
+}: Readonly<CloseButtonProps>) {
   return children
 }
 
@@ -875,7 +875,7 @@ function StageButton({
     <span style={{ fontSize: 10 }}>—</span>
   </div>,
   onClick = () => {},
-}: StageButtonProps) {
+}: Readonly<StageButtonProps>) {
   return children
 }
 
@@ -893,7 +893,7 @@ function Content({
   children = null,
   onUnfocusedWheel = DEFAULT_ON_UNFOCUSED_WHEEL,
   ...attrs
-}: ContentProps) {
+}: Readonly<ContentProps>) {
   const { setWheelBusy } = useContext(ManagerContext)
   const { setFocused } = useContext(WindowContext)
   const fluidRef = useRef<HTMLDivElement>(null)
@@ -941,7 +941,7 @@ function BasicWindow({
   opened = true,
   onClose,
   ...attrs
-}: BasicWindowProps) {
+}: Readonly<BasicWindowProps>) {
   const [position, setPosition] = usePosition(initialPosition)
   const [size, setSize] = useState(initialSize)
   const [openedState, setOpenedState] = useState(opened)
