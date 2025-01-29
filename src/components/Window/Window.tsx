@@ -22,6 +22,8 @@ import { ALWAYS_ON_TOP_Z_INDEX, WindowContext } from './library'
 
 import styles from './Window.module.css'
 
+type Timer = ReturnType<typeof setTimeout>
+
 type ResizerDirection = 'top' | 'right' | 'bottom' | 'left' |
                         'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
 type OnMayResize = (may_resize: boolean) => void
