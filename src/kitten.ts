@@ -17,7 +17,7 @@ export function isMobileDevice() {
 }
 
 export function hashKittenIds(ids: string[]): string {
-  return ids.toSorted((a, b) => a.localeCompare(b)).join('')
+  return ids.slice().sort((a, b) => a.localeCompare(b)).join('')
 }
 
 export function nonZeroPosition(position: [number, number]): [number, number] {
