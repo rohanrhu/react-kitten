@@ -451,7 +451,7 @@ function SnapMover({
   onMoveStart = () => {},
   onMoveEnd = () => {}
 }: Readonly<SnapMoverProps>) {
-  const { pointer } = useContext(ManagerContext)
+  const { pointer } = useContext(SpaceContext)
   const { lmb } = useContext(SpaceContext)
   const [dragging, setDragging] = useState<boolean>(false)
   const onMoveRef = useRef(onMove)
@@ -496,7 +496,7 @@ function SnapResizer({
   onResizeStart = () => {},
   onResizeEnd = () => {}
 }: Readonly<SnapResizerProps>) {
-  const { pointer } = useContext(ManagerContext)
+  const { pointer } = useContext(SpaceContext)
   const { lmb } = useContext(SpaceContext)
   
   const [dragging, setDragging] = useState<boolean>(false)

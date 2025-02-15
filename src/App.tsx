@@ -54,7 +54,7 @@ function App() {
         space={space}
         onSpaceChange={setSpace}
       >
-        <Space>
+        <Space snap={true}>
           <Header />
           <h1 className="colorful colorful__secondary">Welcome to React&lt;Kitten&gt;</h1>
           <p>React&lt;Kitten&gt; is a desktop environment for the web. It is a React component library that allows you to create desktop-like applications in the browser.</p>
