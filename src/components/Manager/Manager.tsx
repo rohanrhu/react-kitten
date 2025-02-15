@@ -58,20 +58,6 @@ export function Manager({
 
   useEffect(() => {!lmb && setWheelBusy(false)}, [lmb])
 
-  const onMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect()
-    const new_pointer: [number, number] = [event.clientX - rect.x, event.clientY - rect.y]
-    setPointer(new_pointer)
-  }, [])
-
-  const onTouchMove = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
-      if (event.touches.length !== 1) return
-      const touch = event.touches[0]
-      const rect = event.currentTarget.getBoundingClientRect()
-      const new_pointer: [number, number] = [touch.clientX - rect.x, touch.clientY - rect.y]
-      setPointer(new_pointer)
-  }, [])
-  
   return <ManagerContext.Provider value={contextProps}>
     <div
       {...(attrs as HTMLAttributes<HTMLDivElement>)}
@@ -100,8 +86,6 @@ export function Manager({
         transform: `scale(${scale[0]}, ${scale[1]})`,
         ...attrs.style
       }}
-      onMouseMove={onMouseMove}
-      onTouchMove={onTouchMove}
       onMouseDown={() => setLmb(true)}
       onMouseUp={() => setLmb(false)}
       onTouchStart={() => setLmb(true)}
