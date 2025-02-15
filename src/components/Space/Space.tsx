@@ -19,15 +19,13 @@ import { SpaceContext, SpaceEventDispatcher, SpaceWindow, SpaceWindows, ToSnap, 
 
 import styles from './Space.module.css'
 
-const FPS = 60
-const FRAME_DELAY = 1000 / FPS
-
 const DEFAULT_AUTO_HIDE_STAGEDS: boolean = false
 const DEFAULT_STAGEDS_WIDTH: number = 150
 const DEFAULT_SNAP: boolean = false
 const DEFAULT_SNAP_MARGIN: number = 20
 const DEFAULT_SNAP_THRESHOLD: number = 50
 const DEFAULT_SNAP_WITH = 'all'
+const DEFAULT_FPS = 60
 
 type SnappingOrientation = 'horizontal' | 'vertical'
 
@@ -71,7 +69,8 @@ interface SpaceProps extends React.HTMLAttributes<HTMLDivElement> {
   snapMargin?: number
   snapThreshold?: number
   snapResizer?: boolean
-  snapWith?: 'all' | 'move' | 'resize'
+  snapWith?: 'all' | 'move' | 'resize',
+  fps?: number
 }
 
 /**
@@ -87,6 +86,7 @@ export function Space({
   snapMargin = DEFAULT_SNAP_MARGIN,
   snapThreshold = DEFAULT_SNAP_THRESHOLD,
   snapWith = DEFAULT_SNAP_WITH,
+  fps = DEFAULT_FPS,
   ...attrs
 }: Readonly<SpaceProps>) {
   const { size, setWheelBusy, scaleX, scaleY, revertScaleX, revertScaleY } = useContext(ManagerContext)
@@ -102,9 +102,12 @@ export function Space({
   const [snapping, setSnapping] = useState<Snapping | null>(null)
   const [snaps, setSnaps] = useState<Snap[]>([])
   const [eventDispatcher] = useState(new SpaceEventDispatcher())
+  const [frameDelay, setFrameDelay] = useState<number>(1000 / fps)
   const [unmountedWindows, setUnmountedWindows] = useState<string[]>([])
   const snapMovingRef = useRef(false)
   const snapResizingRef = useRef(false)
+
+  useEffect(() => setFrameDelay(1000 / fps), [fps])
   
   useEffect(() => setShowStageds(pointer[0] <= 150), [pointer])
   
@@ -277,9 +280,9 @@ export function Space({
   
   const contextProps = useMemo(() => ({
     lmb, pointer, setPointer, windowsRef: windowsContainerRef, stagedsRef, focusedWindow, setFocusedWindow, lastWindowPosition,
-    setLastWindowPosition, windowZIndexCounter, setWindowZIndexCounter, stagedsWidth, snap, snapMargin, snapThreshold, toSnap, onWindowMoveStart, onWindowMoveEnd, onWindowBoundsChanged: onWindowBoundsChange, onUserBoundsChangeEnd, eventDispatcher, unmountedWindows, setUnmountedWindows
+    setLastWindowPosition, windowZIndexCounter, setWindowZIndexCounter, stagedsWidth, snap, snapMargin, snapThreshold, toSnap, frameDelay, onWindowMoveStart, onWindowMoveEnd, onWindowBoundsChanged: onWindowBoundsChange, onUserBoundsChangeEnd, eventDispatcher, unmountedWindows, setUnmountedWindows
   }), [lmb, pointer, setPointer, windowsContainerRef, stagedsRef, focusedWindow, setFocusedWindow, lastWindowPosition,
-    setLastWindowPosition, windowZIndexCounter, setWindowZIndexCounter, stagedsWidth, snap, snapMargin, snapThreshold, toSnap, onWindowMoveStart, onWindowMoveEnd, onWindowBoundsChange, onUserBoundsChangeEnd, eventDispatcher, unmountedWindows, setUnmountedWindows])
+    setLastWindowPosition, windowZIndexCounter, setWindowZIndexCounter, stagedsWidth, snap, snapMargin, snapThreshold, toSnap, frameDelay, onWindowMoveStart, onWindowMoveEnd, onWindowBoundsChange, onUserBoundsChangeEnd, eventDispatcher, unmountedWindows, setUnmountedWindows])
 
   const lastSetPointerTime = useRef<number>(0)
   const lastSetPointerCompensationTimeoutRef = useRef<number | null>(null)
@@ -293,15 +296,15 @@ export function Space({
     
     const time = Date.now()
 
-    if (time - lastSetPointerTime.current < FRAME_DELAY) {
-      lastSetPointerCompensationTimeoutRef.current = setTimeout(() => setPointer(new_pointer), FRAME_DELAY) as unknown as number
+    if (time - lastSetPointerTime.current < frameDelay) {
+      lastSetPointerCompensationTimeoutRef.current = setTimeout(() => setPointer(new_pointer), frameDelay) as unknown as number
       return
     }
     
     lastSetPointerTime.current = time
 
     setPointer(new_pointer)
-  }, [])
+  }, [frameDelay])
 
   const onTouchMove = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
       if (event.touches.length !== 1) return
@@ -315,15 +318,15 @@ export function Space({
       
       const time = Date.now()
 
-      if (time - lastSetPointerTime.current < FRAME_DELAY) {
-        lastSetPointerCompensationTimeoutRef.current = setTimeout(() => setPointer(new_pointer), FRAME_DELAY) as unknown as number
+      if (time - lastSetPointerTime.current < frameDelay) {
+        lastSetPointerCompensationTimeoutRef.current = setTimeout(() => setPointer(new_pointer), frameDelay) as unknown as number
         return
       }
       
       lastSetPointerTime.current = time
 
       setPointer(new_pointer)
-  }, [])
+  }, [frameDelay])
     
   return <SpaceContext.Provider value={contextProps}>
     <div

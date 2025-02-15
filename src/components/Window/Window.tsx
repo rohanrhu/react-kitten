@@ -661,8 +661,8 @@ function Resizer({
     } else throw new Error('Invalid direction')
   }, [pointer, dragging, direction, onResizeCallback, onMove, scaleX, scaleY, revertScaleX, revertScaleY])
 
-  useEffect(() => { sizeRef.current = size }, [size])
   useEffect(() => { !lmb && setDragging(false) }, [lmb])
+  useEffect(() => { sizeRef.current = size }, [size])
   useEffect(() => { prevDragPositionRef.current = pointer }, [pointer])
   useEffect(() => { positionRef.current = position }, [position])
 

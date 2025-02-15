@@ -12,6 +12,9 @@
 
 import React, { useState, useEffect } from 'react'
 
+import { Chess } from 'chess.js'
+import { Chessboard } from 'react-chessboard'
+
 import {
   Manager, Spaces, Space, Window, BasicWindow, TitleBar,
   Title, Buttons, CloseButton, Content, usePosition, useSize, useKittenId,
@@ -54,7 +57,7 @@ function App() {
         space={space}
         onSpaceChange={setSpace}
       >
-        <Space snap={true}>
+        <Space snap={true} fps={30}>
           <Header />
           <h1 className="colorful colorful__secondary">Welcome to React&lt;Kitten&gt;</h1>
           <p>React&lt;Kitten&gt; is a desktop environment for the web. It is a React component library that allows you to create desktop-like applications in the browser.</p>
@@ -71,6 +74,8 @@ function App() {
             <h2>Window</h2>
             <p>Window content</p>
           </MyWindow>
+
+          <ChessWindow />
         </Space>
         {Array.from({ length: SPACES_NUM }).map((_, i) => <Space key={(() => i)()}>
           <Header />
@@ -160,6 +165,37 @@ function CatList({ cats, onCatClick }: React.PropsWithChildren & { cats: string[
       />
     )}
   </div>
+}
+
+function ChessWindow({ title }: React.PropsWithChildren & { title?: string }) {
+  const [kittenId,] = useKittenId()
+  const [position, setPosition] = usePosition([300, 300])
+  const [size, setSize] = useSize([380, 410])
+  const [staged, setStaged] = useState(false)
+  const [alwaysOnTop,] = useState(false)
+  
+  const [chess,] = useState(new Chess())
+
+  return (
+    <Window
+      kittenId={kittenId}
+      position={position} onPositionChange={setPosition}
+      size={size} onSizeChange={setSize}
+      staged={staged} onStagedChange={setStaged}
+      alwaysOnTop={alwaysOnTop}
+    >
+      <TitleBar onMove={setPosition}>
+        <Buttons>
+          <CloseButton onClick={() => {}}/>
+          <StageButton onClick={() => setStaged(!staged)} />
+        </Buttons>
+        <Title>{title}</Title>
+      </TitleBar>
+      <Content>
+        <Chessboard position={chess.fen()} />
+      </Content>
+    </Window>
+  )
 }
 
 export default App

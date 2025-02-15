@@ -157,6 +157,7 @@ export interface SpaceContextProps {
     toSnap: ToSnap | null
     eventDispatcher: SpaceEventDispatcher | null
     unmountedWindows: string[]
+    frameDelay: number
     setUnmountedWindows: React.Dispatch<React.SetStateAction<string[]>>
     onWindowMoveStart: SpaceWindowBoundsUpdateEventCallback
     onWindowMoveEnd: SpaceWindowBoundsUpdateEventCallback
@@ -183,6 +184,7 @@ export const SpaceContext = createContext<SpaceContextProps>({
     toSnap: null,
     eventDispatcher: null,
     unmountedWindows: [],
+    frameDelay: 16,
     setUnmountedWindows: () => {},
     onWindowMoveStart: () => {},
     onWindowMoveEnd: () => {},
