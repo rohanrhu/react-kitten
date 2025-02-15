@@ -52,7 +52,6 @@
 }
 .Space.Space__showStageds .Space_stageds,
 .Space.Space__autoHideStageds.Space__showStageds .Space_stageds {
-    pointer-events: all;
     opacity: 1;
 }
 
