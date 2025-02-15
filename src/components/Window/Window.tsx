@@ -22,7 +22,7 @@ import { ALWAYS_ON_TOP_Z_INDEX, WindowContext } from './library'
 
 import styles from './Window.module.css'
 
-type Timer = ReturnType<typeof setTimeout>
+type Timeout = ReturnType<typeof setTimeout> | null | undefined
 
 type ResizerDirection = 'top' | 'right' | 'bottom' | 'left' |
                         'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
@@ -123,7 +123,7 @@ function Window({
           snapMargin, toSnap, eventDispatcher: spaceEventDispatcher, unmountedWindows: spaceUnmountedWindows, setUnmountedWindows: setSpaceUnmountedWindows
   } = useContext(SpaceContext)
   const [showResizers, setShowResizers] = useState(false)
-  const resizerMouseMoveTimeoutRef = useRef<Timer>()
+  const resizerMouseMoveTimeoutRef = useRef<Timeout>(null)
   const [mayResize, setMayResize] = useState(false)
   const [moving, setMoving] = useState(false)
   const [resizing, setResizing] = useState(false)
@@ -140,7 +140,7 @@ function Window({
   const [movingStartPosition, setMovingStartPosition] = useState<[number, number]>(position)
   const [prevManagerSize, setPrevManagerSize] = useState(managerSize)
   const prevAlwaysOnTopRef = useRef<boolean>(false)
-  const hideResizersTimeoutRef = useRef<Timer>()
+  const hideResizersTimeoutRef = useRef<Timeout>(null)
   const prevResizingRef = useRef(resizing)
   const [lastWindowPosition, setLastWindowPosition] = useState<[number, number]>(position)
   const [stagedBy, setStagedBy] = useState<'instant' | 'move'>('instant')
@@ -351,7 +351,7 @@ function Window({
   useEffect(() => {
     if (!isMobileDevice()) return
     if (!showResizers) return
-    clearTimeout(hideResizersTimeoutRef.current)
+    clearTimeout(hideResizersTimeoutRef.current as unknown as number)
     hideResizersTimeoutRef.current = setTimeout(() => setShowResizers(false), 2500)
   }, [showResizers])
 
@@ -437,7 +437,7 @@ function Window({
 
   const onMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     if (isMobileDevice()) return
-    clearTimeout(resizerMouseMoveTimeoutRef.current)
+    clearTimeout(resizerMouseMoveTimeoutRef.current as unknown as number)
     if (!resizable) return
     const rect = event.currentTarget.getBoundingClientRect()
 
@@ -457,7 +457,7 @@ function Window({
 
   const onMouseLeave = useCallback(() => {
     if (isMobileDevice()) return
-    clearTimeout(resizerMouseMoveTimeoutRef.current)
+    clearTimeout(resizerMouseMoveTimeoutRef.current as unknown as number)
     setShowResizers(false)
   }, [])
 
@@ -548,28 +548,30 @@ function Window({
     </div>
   
   return <WindowContext.Provider value={contextProps}>
-    {stagedsRef.current && staged && createPortal(<div
-      className={classNames([styles.Window_stagedWindow])}
-      style={{
-        width: scaledStagedSize[0],
-        height: scaledStagedSize[1],
-        transform: staged ? `
-        `: undefined,
-      }}
-      onMouseOver={() => setWheelBusy(true)}
-      onMouseLeave={() => setWheelBusy(false)}
-      onTouchStart={() => setWheelBusy(true)}
-      onTouchEnd={() => setWheelBusy(false)}
-      onClick={() => {
-        onStagedChange(false)
-        if (stagedBy == 'move')
-          onPositionChange(movingStartPosition, 'user')
-        setFocused(true)
-      }}
-    >
-      {window}
-    </div>, stagedsRef.current)}
-    {!staged && windowsRef.current && createPortal(window, windowsRef.current)}
+    {stagedsRef.current && staged && <>
+      {createPortal(<div
+        className={classNames([styles.Window_stagedWindow])}
+        style={{
+          width: scaledStagedSize[0],
+          height: scaledStagedSize[1],
+          transform: staged ? `
+          `: undefined,
+        }}
+        onMouseOver={() => setWheelBusy(true)}
+        onMouseLeave={() => setWheelBusy(false)}
+        onTouchStart={() => setWheelBusy(true)}
+        onTouchEnd={() => setWheelBusy(false)}
+        onClick={() => {
+          onStagedChange(false)
+          if (stagedBy == 'move')
+            onPositionChange(movingStartPosition, 'user')
+          setFocused(true)
+        }}
+      >
+        {window}
+      </div>, stagedsRef.current)}
+    </>}
+    {!staged && windowsRef.current && <>{createPortal(window, windowsRef.current)}</>}
   </WindowContext.Provider>
 }
 
@@ -847,7 +849,9 @@ function CloseButton({
     onTouchStart={event => event.stopPropagation()}
     onTouchEnd={event => event.stopPropagation()}
   >
-    ✖︎
+    <div className={classNames([styles.Button_content])}>
+      <span style={{ fontSize: 10 }}>✕</span>
+    </div>
   </div>,
   onClick = () => {},
 }: Readonly<CloseButtonProps>) {
@@ -874,7 +878,9 @@ function StageButton({
     onTouchStart={event => event.stopPropagation()}
     onTouchEnd={event => event.stopPropagation()}
   >
-    <span style={{ fontSize: 10 }}>—</span>
+    <div className={classNames([styles.Button_content])}>
+      <span style={{ fontSize: 10 }}>—</span>
+    </div>
   </div>,
   onClick = () => {},
 }: Readonly<StageButtonProps>) {

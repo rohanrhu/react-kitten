@@ -42,7 +42,7 @@ export class SpaceWindow {
 }
 
 export class SpaceWindows {
-  private windows: Map<string, SpaceWindow> = new Map()
+  private readonly windows: Map<string, SpaceWindow> = new Map()
 
   constructor(windows?: Map<string, SpaceWindow>) {
     if (windows)
@@ -142,13 +142,13 @@ export interface SpaceContextProps {
     lmb: boolean
     pointer: [number, number]
     setPointer: React.Dispatch<React.SetStateAction<[number, number]>>
-    windowsRef: React.RefObject<HTMLDivElement>
+    windowsRef: React.RefObject<HTMLDivElement | null>
     stagedsWidth: number
     focusedWindow: string | null
     setFocusedWindow: React.Dispatch<React.SetStateAction<string | null>>
     windowZIndexCounter: number
     setWindowZIndexCounter: React.Dispatch<React.SetStateAction<number>>
-    stagedsRef: React.RefObject<HTMLDivElement>
+    stagedsRef: React.RefObject<HTMLDivElement | null>
     lastWindowPosition: [number, number]
     setLastWindowPosition: React.Dispatch<React.SetStateAction<[number, number]>>
     snap: boolean

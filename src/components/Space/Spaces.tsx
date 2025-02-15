@@ -47,7 +47,7 @@ function Spaces({
 }: Readonly<SpacesProps>) {
   const { size, wheelBusy, scaleX, scaleY, wheelSpaceSwitch } = useContext(ManagerContext)
   const [scrollX, setScrollX] = useState(0)
-  const bounceTimeoutRef = useRef<Timer>()
+  const bounceTimeoutRef = useRef<number | null>(null)
   const touchStartRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 })
 
   useEffect(() => {
@@ -67,7 +67,7 @@ function Spaces({
     const delta = scaled_delta[0] || scaled_delta[1]
     const current_x = space * size[0]
 
-    clearTimeout(bounceTimeoutRef.current)
+    clearTimeout(bounceTimeoutRef.current as unknown as number)
 
     if ((scrollX - delta > 0 && space > 0) || (scrollX - delta < 0 && space < spaces-1)) {
       setScrollX(scrollX - delta)
@@ -79,7 +79,7 @@ function Spaces({
       } else {
         setScrollX(space * size[0] * -1)
       }
-    }, bounceDelay)
+    }, bounceDelay) as unknown as number
   }, [space, size, scrollThreshold, scrollX, bounceDelay, onSpaceChange, children, wheelBusy, scaleX, scaleY, wheelSpaceSwitch])
 
   const onTouchStart = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
@@ -107,7 +107,7 @@ function Spaces({
     const delta = scaled_delta[0] || scaled_delta[1]
     const current_x = space * size[0]
   
-    clearTimeout(bounceTimeoutRef.current)
+    clearTimeout(bounceTimeoutRef.current as unknown as number)
   
     if (((scrollX - scaled_delta[0] > 0 && space > 0) || (scrollX - scaled_delta[0] < 0 && space < spaces - 1)) && (Math.abs(scaled_delta[0]) > swipeThreshold * 0.25)) {
       setScrollX(scrollX - delta)
@@ -121,7 +121,7 @@ function Spaces({
       } else {
         setScrollX(space * size[0] * -1)
       }
-    }, bounceDelay)
+    }, bounceDelay) as unknown as number
   }, [space, size, swipeThreshold, scrollX, bounceDelay, onSpaceChange, children, wheelBusy, scaleX, scaleY, wheelSpaceSwitch])
   
   return <div
