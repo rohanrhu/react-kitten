@@ -21,15 +21,16 @@
 
 .Space_stageds {
     position: absolute;
-    top: 0px;
+    top: 50px;
     left: 0px;
+    height: calc(100vh - 50px);
+    pointer-events: none;
+    justify-content: center;
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
-    justify-content: space-evenly;
     align-items: flex-start;
     width: 150px;
-    height: 100%;
     box-sizing: border-box;
     user-select: none;
     -webkit-user-select: none;
