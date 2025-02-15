@@ -18,21 +18,21 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@fontsource-variable/josefin-sans": "^5.0.21",
-    "@fontsource-variable/merienda": "^5.0.13",
-    "@types/react": "^18.3.3",
+    "@fontsource-variable/josefin-sans": "5.1.1",
+    "@fontsource-variable/merienda": "5.1.1",
+    "@types/react": "19.0.8",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.15.0",
     "@typescript-eslint/parser": "^7.15.0",
     "@vitejs/plugin-react": "^4.3.1",
     "classnames": "^2.5.1",
     "eslint": "^8.57.0",
-    "eslint-plugin-react-hooks": "^4.6.2",
-    "eslint-plugin-react-refresh": "^0.4.7",
+    "eslint-plugin-react-hooks": "5.1.0",
+    "eslint-plugin-react-refresh": "0.4.19",
     "typedoc": "^0.26.5",
     "typescript": "^5.2.2",
     "vite": "^5.3.4",
