@@ -24,7 +24,7 @@ const FRAME_DELAY = 1000 / FPS
 
 const DEFAULT_AUTO_HIDE_STAGEDS: boolean = false
 const DEFAULT_STAGEDS_WIDTH: number = 150
-const DEFAULT_SNAP: boolean = true
+const DEFAULT_SNAP: boolean = false
 const DEFAULT_SNAP_MARGIN: number = 20
 const DEFAULT_SNAP_THRESHOLD: number = 50
 const DEFAULT_SNAP_WITH = 'all'
