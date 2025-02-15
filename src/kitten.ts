@@ -29,7 +29,7 @@ export function nonZeroPosition(position: [number, number]): [number, number] {
 }
 
 export class EventDispatcher<T, E> {
-  private readonly listeners: Map<T, ((event: E) => void)[]> = new Map()
+  private readonly listeners: Map<T, ((event?: E) => void)[]> = new Map()
 
   addListener<C>(type: T, listener: (event: C) => void) {
     const listeners = this.listeners.get(type)
@@ -51,7 +51,7 @@ export class EventDispatcher<T, E> {
     else listeners.push(listener as any) // eslint-disable-line @typescript-eslint/no-explicit-any
   }
 
-  dispatch(name: T, event: E) {
+  dispatch(name: T, event?: E) {
     const listeners = this.listeners.get(name as any) // eslint-disable-line @typescript-eslint/no-explicit-any
     if (!listeners) return
     listeners.forEach(listener => listener(event))
