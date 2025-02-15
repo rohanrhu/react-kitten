@@ -21,9 +21,9 @@
 
 .Space_stageds {
     position: absolute;
-    top: 50px;
+    top: 0px;
     left: 0px;
-    height: calc(100vh - 50px);
+    height: 100%;
     pointer-events: none;
     justify-content: center;
     display: flex;
