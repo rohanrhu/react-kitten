@@ -19,6 +19,9 @@ import { SpaceContext, SpaceEventDispatcher, SpaceWindow, SpaceWindows, ToSnap, 
 
 import styles from './Space.module.css'
 
+const FPS = 60
+const FRAME_DELAY = 1000 / FPS
+
 const DEFAULT_AUTO_HIDE_STAGEDS: boolean = false
 const DEFAULT_STAGEDS_WIDTH: number = 150
 const DEFAULT_SNAP: boolean = true
@@ -278,17 +281,47 @@ export function Space({
   }), [lmb, pointer, setPointer, windowsContainerRef, stagedsRef, focusedWindow, setFocusedWindow, lastWindowPosition,
     setLastWindowPosition, windowZIndexCounter, setWindowZIndexCounter, stagedsWidth, snap, snapMargin, snapThreshold, toSnap, onWindowMoveStart, onWindowMoveEnd, onWindowBoundsChange, onUserBoundsChangeEnd, eventDispatcher, unmountedWindows, setUnmountedWindows])
 
+  const lastSetPointerTime = useRef<number>(0)
+  const lastSetPointerCompensationTimeoutRef = useRef<number | null>(null)
+    
   const onMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    if (lastSetPointerCompensationTimeoutRef.current)
+      clearTimeout(lastSetPointerCompensationTimeoutRef.current)
+    
     const rect = event.currentTarget.getBoundingClientRect()
     const new_pointer: [number, number] = [event.clientX - rect.x, event.clientY - rect.y]
+    
+    const time = Date.now()
+
+    if (time - lastSetPointerTime.current < FRAME_DELAY) {
+      lastSetPointerCompensationTimeoutRef.current = setTimeout(() => setPointer(new_pointer), FRAME_DELAY) as unknown as number
+      return
+    }
+    
+    lastSetPointerTime.current = time
+
     setPointer(new_pointer)
   }, [])
 
   const onTouchMove = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
       if (event.touches.length !== 1) return
+
+      if (lastSetPointerCompensationTimeoutRef.current)
+        clearTimeout(lastSetPointerCompensationTimeoutRef.current)
+      
       const touch = event.touches[0]
       const rect = event.currentTarget.getBoundingClientRect()
       const new_pointer: [number, number] = [touch.clientX - rect.x, touch.clientY - rect.y]
+      
+      const time = Date.now()
+
+      if (time - lastSetPointerTime.current < FRAME_DELAY) {
+        lastSetPointerCompensationTimeoutRef.current = setTimeout(() => setPointer(new_pointer), FRAME_DELAY) as unknown as number
+        return
+      }
+      
+      lastSetPointerTime.current = time
+
       setPointer(new_pointer)
   }, [])
     
