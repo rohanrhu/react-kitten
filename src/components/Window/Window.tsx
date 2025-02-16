@@ -119,7 +119,7 @@ function Window({
 }: Readonly<WindowProps>) {
   const { size: managerSize, setWheelBusy, scaleX, scaleY, revertScaleX, revertScaleY } = useContext(ManagerContext)
   const { lmb, pointer, windowsRef, stagedsRef, focusedWindow, setFocusedWindow, setLastWindowPosition: setSpaceLastWindowPosition,
-          windowZIndexCounter, setWindowZIndexCounter, stagedsWidth, onWindowMoveStart, onWindowMoveEnd, onUserBoundsChangeEnd, onWindowBoundsChanged,
+          windowZIndexCounterRef, stagedsWidth, onWindowMoveStart, onWindowMoveEnd, onUserBoundsChangeEnd, onWindowBoundsChanged,
           snapMargin, toSnap, eventDispatcher: spaceEventDispatcher, unmountedWindows: spaceUnmountedWindows, setUnmountedWindows: setSpaceUnmountedWindows
   } = useContext(SpaceContext)
   const [showResizers, setShowResizers] = useState(false)
@@ -154,8 +154,6 @@ function Window({
 
   const prevPositionRef = useRef<[number, number]>(position)
   const prevSizeRef = useRef<[number, number]>(size)
-
-  const windowZIndexCounterRef = useRef(windowZIndexCounter)
 
   const onMount = useCallback(() => {
   }, [])
@@ -256,10 +254,8 @@ function Window({
     prevAlwaysOnTopRef.current = alwaysOnTop
     const newCounter = windowZIndexCounterRef.current + 1
     setZIndex(newCounter + (alwaysOnTop ? ALWAYS_ON_TOP_Z_INDEX: 0))
-    setWindowZIndexCounter(newCounter)
-  }, [focused, focusedWindow, setWindowZIndexCounter, kittenId, zIndex, alwaysOnTop])
-
-  useEffect(() => { windowZIndexCounterRef.current = windowZIndexCounter }, [windowZIndexCounter])
+    windowZIndexCounterRef.current = newCounter
+  }, [focused, focusedWindow, kittenId, zIndex, alwaysOnTop, windowZIndexCounterRef])
   
   useEffect(() => {
     if (!moving) return

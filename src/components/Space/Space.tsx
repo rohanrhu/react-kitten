@@ -95,8 +95,7 @@ export function Space({
   const windowsContainerRef = useRef<HTMLDivElement>(null)
   const stagedsRef = useRef<HTMLDivElement>(null)
   const [focusedWindow, setFocusedWindow] = useState<string | null>(null)
-  const [lastWindowPosition, setLastWindowPosition] = React.useState<[number, number]>([0, 0])
-  const [windowZIndexCounter, setWindowZIndexCounter] = React.useState<number>(1000)
+  const [lastWindowPosition, setLastWindowPosition] = useState<[number, number]>([0, 0])
   const [showStageds, setShowStageds] = useState<boolean>(!autoHideStageds)
   const [toSnap, setToSnap] = useState<ToSnap | null>(null)
   const [snapping, setSnapping] = useState<Snapping | null>(null)
@@ -104,8 +103,10 @@ export function Space({
   const [eventDispatcher] = useState(new SpaceEventDispatcher())
   const [frameDelay, setFrameDelay] = useState<number>(1000 / fps)
   const [unmountedWindows, setUnmountedWindows] = useState<string[]>([])
+
   const snapMovingRef = useRef(false)
   const snapResizingRef = useRef(false)
+  const windowZIndexCounterRef = useRef<number>(1000)
 
   useEffect(() => setFrameDelay(1000 / fps), [fps])
   
@@ -273,16 +274,16 @@ export function Space({
     if (!focusedWindow) return
     const snap = snapsRef.current.find(snap => snap.relatedWindows.has(focusedWindow))
     if (!snap) return
-    snap.zIndex = windowZIndexCounter
+    snap.zIndex = windowZIndexCounterRef.current
     snapsRef.current = [...snapsRef.current.filter(otherSnap => !snap.equals(otherSnap)), snap]
     setSnaps([...snapsRef.current])
-  }, [focusedWindow, windowZIndexCounter])
+  }, [focusedWindow])
   
   const contextProps = useMemo(() => ({
     lmb, pointer, setPointer, windowsRef: windowsContainerRef, stagedsRef, focusedWindow, setFocusedWindow, lastWindowPosition,
-    setLastWindowPosition, windowZIndexCounter, setWindowZIndexCounter, stagedsWidth, snap, snapMargin, snapThreshold, toSnap, frameDelay, onWindowMoveStart, onWindowMoveEnd, onWindowBoundsChanged: onWindowBoundsChange, onUserBoundsChangeEnd, eventDispatcher, unmountedWindows, setUnmountedWindows
+    setLastWindowPosition, windowZIndexCounterRef, stagedsWidth, snap, snapMargin, snapThreshold, toSnap, frameDelay, onWindowMoveStart, onWindowMoveEnd, onWindowBoundsChanged: onWindowBoundsChange, onUserBoundsChangeEnd, eventDispatcher, unmountedWindows, setUnmountedWindows
   }), [lmb, pointer, setPointer, windowsContainerRef, stagedsRef, focusedWindow, setFocusedWindow, lastWindowPosition,
-    setLastWindowPosition, windowZIndexCounter, setWindowZIndexCounter, stagedsWidth, snap, snapMargin, snapThreshold, toSnap, frameDelay, onWindowMoveStart, onWindowMoveEnd, onWindowBoundsChange, onUserBoundsChangeEnd, eventDispatcher, unmountedWindows, setUnmountedWindows])
+    setLastWindowPosition, windowZIndexCounterRef, stagedsWidth, snap, snapMargin, snapThreshold, toSnap, frameDelay, onWindowMoveStart, onWindowMoveEnd, onWindowBoundsChange, onUserBoundsChangeEnd, eventDispatcher, unmountedWindows, setUnmountedWindows])
 
   const lastSetPointerTime = useRef<number>(0)
   const lastSetPointerCompensationTimeoutRef = useRef<number | null>(null)
@@ -366,7 +367,7 @@ export function Space({
             right: snapping.interactedWindow.id == snapping.leftWindow.id ? undefined: revertScaleY(scaleX(size[0]) - snapping.rightWindow.position[0]),
             top: revertScaleY(snapping.leftWindow.position[1]),
             height: snapping.leftWindow.size[1],
-            zIndex: windowZIndexCounter + 1,
+            zIndex: windowZIndexCounterRef.current + 1,
             width: revertScaleX((() => {
               const leftWindowRight = snapping.leftWindow.position[0] + scaleX(snapping.leftWindow.size[0])
               const rightWindowLeft = snapping.rightWindow.position[0]

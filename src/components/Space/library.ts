@@ -146,8 +146,7 @@ export interface SpaceContextProps {
     stagedsWidth: number
     focusedWindow: string | null
     setFocusedWindow: React.Dispatch<React.SetStateAction<string | null>>
-    windowZIndexCounter: number
-    setWindowZIndexCounter: React.Dispatch<React.SetStateAction<number>>
+    windowZIndexCounterRef: React.RefObject<number>
     stagedsRef: React.RefObject<HTMLDivElement | null>
     lastWindowPosition: [number, number]
     setLastWindowPosition: React.Dispatch<React.SetStateAction<[number, number]>>
@@ -173,8 +172,7 @@ export const SpaceContext = createContext<SpaceContextProps>({
     stagedsWidth: 150,
     focusedWindow: null,
     setFocusedWindow: () => {},
-    windowZIndexCounter: 0,
-    setWindowZIndexCounter: () => {},
+    windowZIndexCounterRef: { current: 0 },
     stagedsRef: { current: null },
     lastWindowPosition: [0, 0],
     setLastWindowPosition: () => {},
