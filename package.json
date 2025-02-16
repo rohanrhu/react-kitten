@@ -4,7 +4,7 @@
   "private": false,
   "repository": "github:rohanrhu/react-kitten",
   "homepage": "https://kitten.meowingcat.io",
-  "version": "0.4.7",
+  "version": "0.4.8.git",
   "type": "module",
   "main": "dist/react-kitten.js",
   "types": "dist/react-kitten.d.ts",

@@ -155,6 +155,8 @@ function Window({
   const prevPositionRef = useRef<[number, number]>(position)
   const prevSizeRef = useRef<[number, number]>(size)
 
+  const windowZIndexCounterRef = useRef(windowZIndexCounter)
+
   const onMount = useCallback(() => {
   }, [])
 
@@ -248,14 +250,16 @@ function Window({
     if (alwaysOnTop == prevAlwaysOnTopRef.current) {
       if (!focused) return
       if (focusedWindow !== kittenId) return
-      if (zIndex === windowZIndexCounter) return
-      if (zIndex === windowZIndexCounter + ALWAYS_ON_TOP_Z_INDEX) return
+      if (zIndex === windowZIndexCounterRef.current) return
+      if (zIndex === windowZIndexCounterRef.current + ALWAYS_ON_TOP_Z_INDEX) return
     }
     prevAlwaysOnTopRef.current = alwaysOnTop
-    const newCounter = windowZIndexCounter + 1
+    const newCounter = windowZIndexCounterRef.current + 1
     setZIndex(newCounter + (alwaysOnTop ? ALWAYS_ON_TOP_Z_INDEX: 0))
     setWindowZIndexCounter(newCounter)
-  }, [focused, focusedWindow, windowZIndexCounter, setWindowZIndexCounter, kittenId, zIndex, alwaysOnTop])
+  }, [focused, focusedWindow, setWindowZIndexCounter, kittenId, zIndex, alwaysOnTop])
+
+  useEffect(() => { windowZIndexCounterRef.current = windowZIndexCounter }, [windowZIndexCounter])
   
   useEffect(() => {
     if (!moving) return
