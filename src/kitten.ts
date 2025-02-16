@@ -10,7 +10,7 @@
  * (MIT License: https://opensource.org/licenses/MIT)
  */
 
-export const version = '0.4.8.git'
+export const version = '0.4.8'
 
 export function isMobileDevice() {
   return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
