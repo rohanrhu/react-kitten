@@ -18,27 +18,27 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "chess.js": "^1.0.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "chess.js": "^1.4.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@fontsource-variable/josefin-sans": "5.1.1",
     "@fontsource-variable/merienda": "5.1.1",
-    "@types/react": "19.0.8",
-    "@types/react-dom": "^18.3.0",
-    "@typescript-eslint/eslint-plugin": "^7.15.0",
-    "@typescript-eslint/parser": "^7.15.0",
-    "@vitejs/plugin-react": "^4.3.1",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^18.3.7",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "@vitejs/plugin-react": "^4.7.0",
     "classnames": "^2.5.1",
-    "eslint": "^8.57.0",
+    "eslint": "^8.57.1",
     "eslint-plugin-react-hooks": "5.1.0",
     "eslint-plugin-react-refresh": "0.4.19",
-    "react-chessboard": "^4.7.2",
-    "typedoc": "^0.26.5",
-    "typescript": "^5.2.2",
-    "vite": "^5.3.4",
-    "vite-plugin-css-injected-by-js": "^3.5.1",
+    "react-chessboard": "^4.7.3",
+    "typedoc": "^0.26.11",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.21",
+    "vite-plugin-css-injected-by-js": "^3.5.2",
     "vite-plugin-dts": "3.9.1"
   }
 }
