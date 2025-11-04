@@ -24,21 +24,22 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "@fontsource-variable/josefin-sans": "5.1.1",
-    "@fontsource-variable/merienda": "5.1.1",
+    "@fontsource-variable/josefin-sans": "5.2.8",
+    "@fontsource-variable/merienda": "5.2.7",
     "@types/react": "^19.2.2",
-    "@types/react-dom": "^18.3.7",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
-    "@vitejs/plugin-react": "^4.7.0",
+    "@types/react-dom": "^19.2.2",
+    "@typescript-eslint/eslint-plugin": "^8.46.3",
+    "@typescript-eslint/parser": "^8.46.3",
+    "@vitejs/plugin-react": "^5.1.0",
+    "ajv": "^8.17.1",
     "classnames": "^2.5.1",
-    "eslint": "^8.57.1",
-    "eslint-plugin-react-hooks": "5.1.0",
-    "eslint-plugin-react-refresh": "0.4.19",
-    "typedoc": "^0.26.11",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "7.0.1",
+    "eslint-plugin-react-refresh": "0.4.24",
+    "typedoc": "^0.28.14",
     "typescript": "^5.9.3",
-    "vite": "^5.4.21",
+    "vite": "^7.1.12",
     "vite-plugin-css-injected-by-js": "^3.5.2",
-    "vite-plugin-dts": "3.9.1"
+    "vite-plugin-dts": "4.5.4"
   }
 }
