@@ -10,10 +10,9 @@
  * (MIT License: https://opensource.org/licenses/MIT)
  */
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 import { Chess } from 'chess.js'
-import { Chessboard } from 'react-chessboard'
 
 import {
   Manager, Spaces, Space, Window, BasicWindow, TitleBar,
@@ -174,8 +173,56 @@ function ChessWindow({ title }: React.PropsWithChildren & { title?: string }) {
   const [staged, setStaged] = useState(false)
   const [alwaysOnTop,] = useState(false)
   
-  const [chess,] = useState(new Chess())
+  const chessRef = useRef<Chess | null>(null)
+  const boardInstanceRef = useRef<{ destroy: () => void; resize?: () => void } | null>(null)
+  const [boardId] = useState(`board-${Math.random().toString(36).substring(2, 9)}`)
 
+  const boardRefCallback = (element: HTMLDivElement | null) => {
+    if (!element || boardInstanceRef.current) return
+
+    const initBoard = () => {
+      // @ts-expect-error - Chessboard is loaded via script tag
+      if (typeof globalThis.Chessboard === 'undefined') {
+        setTimeout(initBoard, 100)
+        return
+      }
+
+      chessRef.current ??= new Chess()
+
+      const config = {
+        draggable: true,
+        position: 'start',
+        pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+        onDrop: function() {
+          return
+        }
+      }
+
+      try {
+        // @ts-expect-error - Chessboard is loaded via script tag
+        boardInstanceRef.current = globalThis.Chessboard(boardId, config)
+      } catch (error) {
+        console.error('Error initializing chessboard:', error)
+      }
+    }
+
+    initBoard()
+  }
+
+  useEffect(() => {
+    if (boardInstanceRef.current && boardInstanceRef.current.resize) {
+      boardInstanceRef.current.resize()
+    }
+  }, [size])
+
+  useEffect(() => {
+    return () => {
+      if (boardInstanceRef.current) {
+        boardInstanceRef.current.destroy()
+      }
+    }
+  }, [])
+  
   return (
     <Window
       kittenId={kittenId}
@@ -189,10 +236,12 @@ function ChessWindow({ title }: React.PropsWithChildren & { title?: string }) {
           <CloseButton onClick={() => {}}/>
           <StageButton onClick={() => setStaged(!staged)} />
         </Buttons>
-        <Title>{title}</Title>
+        <Title>{title || 'Chess'}</Title>
       </TitleBar>
       <Content>
-        <Chessboard position={chess.fen()} />
+        <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 0, margin: 0 }}>
+          <div id={boardId} ref={boardRefCallback} style={{ width: `${Math.min(size[0], size[1] - 40)}px`, maxWidth: '100%', height: '100%' }}></div>
+        </div>
       </Content>
     </Window>
   )
