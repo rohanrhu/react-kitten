@@ -41,6 +41,7 @@
     padding: 50px 10px;
     -ms-overflow-style: none;
     scrollbar-width: none;
+    z-index: 20;
 }
 .Space_stageds::-webkit-scrollbar {
     display: none;
